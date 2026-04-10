@@ -1,6 +1,7 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Bell, LogOut, Search, User } from 'lucide-react'
 import { useState } from 'react'
@@ -56,9 +57,11 @@ export function TopBar({ title, userName, avatarUrl }: TopBarProps) {
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-purple-500 to-cyan-500 text-xs font-bold text-white">
               {avatarUrl ? (
-                <img
+                <Image
                   src={avatarUrl}
                   alt={userName ?? 'User'}
+                  width={32}
+                  height={32}
                   className="h-8 w-8 rounded-full object-cover"
                 />
               ) : (

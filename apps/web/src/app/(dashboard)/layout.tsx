@@ -1,7 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { DashboardShell } from '@/components/layout/dashboard-shell'
-import { AnimatedBackground } from '@/components/effects/animated-background'
+import dynamic from 'next/dynamic'
+
+const AnimatedBackground = dynamic(
+  () => import('@/components/effects/animated-background').then((m) => m.AnimatedBackground),
+  { ssr: false }
+)
 
 export default async function DashboardLayout({
   children,

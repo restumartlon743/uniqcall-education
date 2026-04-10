@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { PanelLeftClose, PanelLeft } from 'lucide-react'
@@ -104,9 +105,11 @@ export function Sidebar({
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-br from-purple-500 to-cyan-500 text-xs font-bold text-white">
               {avatarUrl ? (
-                <img
+                <Image
                   src={avatarUrl}
                   alt={userName ?? 'User'}
+                  width={36}
+                  height={36}
                   className="h-9 w-9 rounded-full object-cover"
                 />
               ) : (

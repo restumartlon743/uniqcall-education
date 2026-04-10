@@ -3,7 +3,12 @@ import "./globals.css";
 import { Inter, Rajdhani } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Providers } from "@/components/layout/providers";
-import { CursorGlow } from "@/components/effects/cursor-glow";
+import dynamic from "next/dynamic";
+
+const CursorGlow = dynamic(
+  () => import("@/components/effects/cursor-glow").then((m) => m.CursorGlow),
+  { ssr: false }
+);
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,6 +26,12 @@ const rajdhani = Rajdhani({
 export const metadata: Metadata = {
   title: "Uniqcall Education",
   description: "Sistem Navigasi Masa Depan Siswa",
+  metadataBase: new URL("https://uniqcall-web.onrender.com"),
+  openGraph: {
+    title: "Uniqcall Education",
+    description: "Sistem Navigasi Masa Depan Siswa",
+    siteName: "Uniqcall Education",
+  },
 };
 
 export default function RootLayout({

@@ -3,10 +3,14 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Brain, BookOpen, Compass } from 'lucide-react'
-import { AnimatedBackground } from '@/components/effects/animated-background'
-import { CursorGlow } from '@/components/effects/cursor-glow'
+import dynamic from 'next/dynamic'
 import { GlowCard } from '@/components/effects/glow-card'
 import { ArchetypeAvatar } from '@/components/effects/archetype-avatar'
+
+const AnimatedBackground = dynamic(
+  () => import('@/components/effects/animated-background').then((m) => m.AnimatedBackground),
+  { ssr: false }
+)
 
 const containerVariants = {
   hidden: {},
@@ -50,7 +54,6 @@ export default function Home() {
   return (
     <div className="relative flex min-h-screen flex-col items-center overflow-hidden bg-[#0A0E27]">
       <AnimatedBackground variant="hero" />
-      <CursorGlow />
 
       {/* Hero Section */}
       <motion.div
