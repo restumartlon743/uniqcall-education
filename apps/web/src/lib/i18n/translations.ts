@@ -94,6 +94,7 @@ export type TranslationSection = {
   dashboard: {
     overview: string
     students: string
+    classes: string
     groups: string
     tasks: string
     reports: string
@@ -359,6 +360,7 @@ export const translations: Translations = {
     dashboard: {
       overview: 'Overview',
       students: 'Students',
+      classes: 'Classes',
       groups: 'Groups',
       tasks: 'Tasks',
       reports: 'Reports',
@@ -620,6 +622,7 @@ export const translations: Translations = {
     dashboard: {
       overview: 'Ringkasan',
       students: 'Siswa',
+      classes: 'Kelas',
       groups: 'Kelompok',
       tasks: 'Tugas',
       reports: 'Laporan',

@@ -31,6 +31,7 @@ interface NavItemDef {
 const teacherNavDefs: NavItemDef[] = [
   { labelKey: 'dashboard.overview', href: '/teacher', icon: <LayoutDashboard className="h-5 w-5" /> },
   { labelKey: 'dashboard.students', href: '/teacher/students', icon: <Users className="h-5 w-5" /> },
+  { labelKey: 'dashboard.classes', href: '/teacher/classes', icon: <BookOpen className="h-5 w-5" /> },
   { labelKey: 'dashboard.groups', href: '/teacher/groups', icon: <Users2 className="h-5 w-5" /> },
   { labelKey: 'dashboard.tasks', href: '/teacher/tasks', icon: <Clipboard className="h-5 w-5" /> },
   { labelKey: 'dashboard.reports', href: '/teacher/reports', icon: <BarChart3 className="h-5 w-5" /> },
