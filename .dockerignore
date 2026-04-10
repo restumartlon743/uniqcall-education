@@ -9,7 +9,8 @@ node_modules
 .git
 .github
 .vscode
-apps/mobile
+apps/mobile/**
+!apps/mobile/package.json
 DEPLOYMENT.md
 PRD.md
 README.md
