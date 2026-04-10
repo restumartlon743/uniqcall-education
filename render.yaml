@@ -19,5 +19,5 @@ services:
         sync: false
     healthCheckPath: /
     autoDeploy: true
-    branch: main
+    branch: master
     rootDir: .
