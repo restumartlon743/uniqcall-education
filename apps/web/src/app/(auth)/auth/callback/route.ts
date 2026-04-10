@@ -1,5 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
+
+function getAdminClient() {
+  // Service role client — bypasses RLS, only used server-side
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) return null
+  return createAdminClient(url, key, { auth: { persistSession: false } })
+}
 
 function getOrigin(request: NextRequest): string {
   // Use explicit site URL env var if set (avoids 0.0.0.0 on Render)
@@ -37,8 +46,11 @@ export async function GET(request: NextRequest) {
       } = await supabase.auth.getUser()
 
       if (user) {
+        // Use service role client to bypass RLS for profile read/write
+        const adminClient = getAdminClient() ?? supabase
+
         // Ensure profile exists
-        const { data: profile } = await supabase
+        const { data: profile } = await adminClient
           .from('profiles')
           .select('role')
           .eq('id', user.id)
@@ -46,9 +58,9 @@ export async function GET(request: NextRequest) {
 
         if (!profile) {
           // Create profile for new user
-          await supabase.from('profiles').insert({
+          await adminClient.from('profiles').insert({
             id: user.id,
-            full_name: user.user_metadata?.full_name ?? null,
+            full_name: user.user_metadata?.full_name ?? user.email ?? 'User',
             avatar_url: user.user_metadata?.avatar_url ?? null,
           })
           return NextResponse.redirect(`${origin}/onboarding`)
