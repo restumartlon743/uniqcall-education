@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: uniqcall-web
+    runtime: node
+    region: singapore
+    plan: starter
+    buildCommand: npm install && npx turbo build --filter=web
+    startCommand: npm run start --workspace=apps/web
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+    healthCheckPath: /
+    autoDeploy: true
+    branch: main
+    rootDir: .

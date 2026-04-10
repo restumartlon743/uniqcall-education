@@ -1,0 +1,11 @@
+{
+  "name": "@uniqcall/supabase",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules"
+  },
+  "devDependencies": {
+    "supabase": "^2"
+  }
+}

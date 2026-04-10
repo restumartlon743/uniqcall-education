@@ -1,0 +1,23 @@
+{
+  "name": "uniqcall",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^20",
+    "playwright": "^1.59.1",
+    "prettier": "^3",
+    "turbo": "^2",
+    "typescript": "^5"
+  }
+}
