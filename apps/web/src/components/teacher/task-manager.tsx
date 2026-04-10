@@ -2,8 +2,11 @@
 
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { MOCK_TASKS } from '@/lib/mock-data'
-import type { MockTask } from '@/lib/mock-data'
+import {
+  useCurrentUser,
+  useTeacherTasks,
+} from '@/hooks/use-supabase-data'
+import type { TaskData } from '@/hooks/use-supabase-data'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -35,7 +38,44 @@ function getDueBadge(dateStr: string) {
 }
 
 export function TaskManager() {
+  const { user, loading: userLoading } = useCurrentUser()
+  const { tasks, loading: tasksLoading } = useTeacherTasks(user?.id ?? '')
+  const loading = userLoading || tasksLoading
+
   const [dialogOpen, setDialogOpen] = useState(false)
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
+  if (tasks.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Task Management</h2>
+            <p className="text-sm text-muted-foreground">No tasks created yet</p>
+          </div>
+          <Button
+            className="gap-2 bg-linear-to-r from-purple-600 to-cyan-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.4)]"
+            onClick={() => setDialogOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
+            Create New Task
+          </Button>
+        </div>
+        <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+          <FileText className="h-12 w-12 mb-4 opacity-50" />
+          <p>Create your first task to get started</p>
+        </div>
+        <CreateTaskDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -44,8 +84,8 @@ export function TaskManager() {
         <div>
           <h2 className="text-lg font-semibold text-white">Task Management</h2>
           <p className="text-sm text-muted-foreground">
-            {MOCK_TASKS.filter((t) => t.status === 'active').length} active
-            tasks · {MOCK_TASKS.length} total
+            {tasks.filter((t) => t.status === 'active').length} active
+            tasks · {tasks.length} total
           </p>
         </div>
         <Button
@@ -59,7 +99,7 @@ export function TaskManager() {
 
       {/* Task List */}
       <div className="space-y-3">
-        {MOCK_TASKS.map((task) => (
+        {tasks.map((task) => (
           <TaskCard key={task.id} task={task} />
         ))}
       </div>
@@ -69,11 +109,11 @@ export function TaskManager() {
   )
 }
 
-function TaskCard({ task }: { task: MockTask }) {
+function TaskCard({ task }: { task: TaskData }) {
   const dueBadge = getDueBadge(task.dueDate)
-  const submissionPercent = Math.round(
-    (task.submissionsCount / task.totalExpected) * 100
-  )
+  const submissionPercent = task.totalExpected > 0
+    ? Math.round((task.submissionsCount / task.totalExpected) * 100)
+    : 0
 
   return (
     <Card className="glass card-glow-hover border-purple-500/20 transition-all duration-300 hover:border-purple-500/40">

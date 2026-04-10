@@ -10,6 +10,7 @@ import {
   RotateCcw,
   Sparkles,
   GripVertical,
+  GraduationCap,
 } from 'lucide-react'
 import type { GameDifficulty } from '@/lib/game-data'
 
@@ -475,7 +476,7 @@ export default function TheoremProver({
             </p>
             <p className="mt-1 text-xs text-white/40">
               {correctSlots.every(Boolean)
-                ? 'QED — Perfect proof! 🎓'
+                ? <><GraduationCap className="mr-1 inline h-4 w-4 text-amber-400" /> QED — Perfect proof!</>
                 : 'Review the highlighted steps and try again!'}
             </p>
           </motion.div>

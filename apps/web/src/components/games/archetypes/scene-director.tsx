@@ -10,7 +10,24 @@ import {
   Star,
   Users,
   Sparkles,
+  User,
+  Smile,
+  Frown,
+  Angry,
+  Meh,
+  Laugh,
+  Gavel,
+  Briefcase,
+  Trophy,
+  GraduationCap,
+  Shield,
+  Heart,
+  BookOpen,
+  Tent,
+  ClipboardList,
+  Laptop,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import type { GameDifficulty } from '@/lib/game-data'
 
 // ─── Types ────────────────────────────────────────────────────
@@ -22,7 +39,7 @@ interface Character {
   id: string
   name: string
   role: string
-  emoji: string
+  icon: LucideIcon
 }
 
 interface SceneSetup {
@@ -43,12 +60,12 @@ interface SceneDirectorProps {
 
 // ─── Data ─────────────────────────────────────────────────────
 
-const EMOTIONS: { value: Emotion; label: string; emoji: string }[] = [
-  { value: 'happy', label: 'Happy', emoji: '😊' },
-  { value: 'sad', label: 'Sad', emoji: '😢' },
-  { value: 'angry', label: 'Angry', emoji: '😠' },
-  { value: 'neutral', label: 'Neutral', emoji: '😐' },
-  { value: 'excited', label: 'Excited', emoji: '🤩' },
+const EMOTIONS: { value: Emotion; label: string; icon: LucideIcon }[] = [
+  { value: 'happy', label: 'Happy', icon: Smile },
+  { value: 'sad', label: 'Sad', icon: Frown },
+  { value: 'angry', label: 'Angry', icon: Angry },
+  { value: 'neutral', label: 'Neutral', icon: Meh },
+  { value: 'excited', label: 'Excited', icon: Laugh },
 ]
 
 const POSITIONS: Position[] = ['left', 'center-left', 'center', 'center-right', 'right']
@@ -67,9 +84,9 @@ const ALL_SCENES: SceneSetup[] = [
     description: 'Friends have gathered to surprise Maya on her birthday.',
     directions: 'Maya enters from stage right, looking surprised. Her best friend Lena stands center stage holding the cake, beaming with joy. Tom is on the far left, excitedly waving balloons.',
     characters: [
-      { id: 'maya', name: 'Maya', role: 'Birthday girl', emoji: '👩' },
-      { id: 'lena', name: 'Lena', role: 'Best friend', emoji: '👧' },
-      { id: 'tom', name: 'Tom', role: 'Friend with balloons', emoji: '👦' },
+      { id: 'maya', name: 'Maya', role: 'Birthday girl', icon: User },
+      { id: 'lena', name: 'Lena', role: 'Best friend', icon: User },
+      { id: 'tom', name: 'Tom', role: 'Friend with balloons', icon: User },
     ],
     correctPlacements: [
       { characterId: 'maya', position: 'right', emotion: 'excited' },
@@ -83,9 +100,9 @@ const ALL_SCENES: SceneSetup[] = [
     description: 'A soldier departs while family watches from the platform.',
     directions: 'Captain Ravi stands center stage, looking neutral and composed. His mother stands to his immediate left, crying. His young sister Priya is on the far right, waving sadly.',
     characters: [
-      { id: 'ravi', name: 'Captain Ravi', role: 'Soldier', emoji: '👨‍✈️' },
-      { id: 'mother', name: 'Mother', role: 'Ravi\'s mother', emoji: '👩‍🦳' },
-      { id: 'priya', name: 'Priya', role: 'Young sister', emoji: '👧' },
+      { id: 'ravi', name: 'Captain Ravi', role: 'Soldier', icon: User },
+      { id: 'mother', name: 'Mother', role: 'Ravi\'s mother', icon: User },
+      { id: 'priya', name: 'Priya', role: 'Young sister', icon: User },
     ],
     correctPlacements: [
       { characterId: 'ravi', position: 'center', emotion: 'neutral' },
@@ -99,9 +116,9 @@ const ALL_SCENES: SceneSetup[] = [
     description: 'The judge announces the verdict in a tense trial.',
     directions: 'Judge Park stands center, maintaining a neutral expression. The defendant Alex is positioned to the right of center, looking worried and sad. The prosecutor Ms. Chen is on the left, looking neutral and professional.',
     characters: [
-      { id: 'park', name: 'Judge Park', role: 'Judge', emoji: '👨‍⚖️' },
-      { id: 'alex', name: 'Alex', role: 'The defendant', emoji: '🧑' },
-      { id: 'chen', name: 'Ms. Chen', role: 'Prosecutor', emoji: '👩‍💼' },
+      { id: 'park', name: 'Judge Park', role: 'Judge', icon: Gavel },
+      { id: 'alex', name: 'Alex', role: 'The defendant', icon: User },
+      { id: 'chen', name: 'Ms. Chen', role: 'Prosecutor', icon: Briefcase },
     ],
     correctPlacements: [
       { characterId: 'park', position: 'center', emotion: 'neutral' },
@@ -115,10 +132,10 @@ const ALL_SCENES: SceneSetup[] = [
     description: 'The team celebrates after winning the final match.',
     directions: 'Star player Kai stands center holding the trophy, absolutely thrilled. Coach Silva is to the far left, happy and clapping. Goalkeeper Mia is to Kai\'s right, excited and cheering. Team captain Dante stands far right, pumping his fist with joy.',
     characters: [
-      { id: 'kai', name: 'Kai', role: 'Star player', emoji: '⚽' },
-      { id: 'silva', name: 'Coach Silva', role: 'Coach', emoji: '🧑‍🏫' },
-      { id: 'mia', name: 'Mia', role: 'Goalkeeper', emoji: '🧤' },
-      { id: 'dante', name: 'Dante', role: 'Team captain', emoji: '🏆' },
+      { id: 'kai', name: 'Kai', role: 'Star player', icon: Trophy },
+      { id: 'silva', name: 'Coach Silva', role: 'Coach', icon: GraduationCap },
+      { id: 'mia', name: 'Mia', role: 'Goalkeeper', icon: Shield },
+      { id: 'dante', name: 'Dante', role: 'Team captain', icon: Star },
     ],
     correctPlacements: [
       { characterId: 'kai', position: 'center', emotion: 'excited' },
@@ -133,10 +150,10 @@ const ALL_SCENES: SceneSetup[] = [
     description: 'A heated discussion at the dinner table.',
     directions: 'Father stands center-left, angry and pointing. Mother is center, trying to be calm and neutral. Teenage daughter Lily is center-right, looking angry back at her father. Younger brother Sam sits far right, looking sad and uncomfortable.',
     characters: [
-      { id: 'father', name: 'Father', role: 'Dad', emoji: '👨' },
-      { id: 'mother', name: 'Mother', role: 'Mom', emoji: '👩' },
-      { id: 'lily', name: 'Lily', role: 'Teenage daughter', emoji: '👧' },
-      { id: 'sam', name: 'Sam', role: 'Younger brother', emoji: '👦' },
+      { id: 'father', name: 'Father', role: 'Dad', icon: User },
+      { id: 'mother', name: 'Mother', role: 'Mom', icon: User },
+      { id: 'lily', name: 'Lily', role: 'Teenage daughter', icon: User },
+      { id: 'sam', name: 'Sam', role: 'Younger brother', icon: User },
     ],
     correctPlacements: [
       { characterId: 'father', position: 'center-left', emotion: 'angry' },
@@ -151,11 +168,11 @@ const ALL_SCENES: SceneSetup[] = [
     description: 'A beautiful outdoor wedding is about to begin.',
     directions: 'The officiant Dr. Reed stands center stage, calm and neutral. Bride Elena is to the left of center, absolutely beaming with happiness. Groom Marcus is to the right of center, also radiantly happy. Best man Jake stands far right, happily holding the rings. Maid of honor Sofia is far left, excited and emotional.',
     characters: [
-      { id: 'reed', name: 'Dr. Reed', role: 'Officiant', emoji: '🧑‍⚖️' },
-      { id: 'elena', name: 'Elena', role: 'Bride', emoji: '👰' },
-      { id: 'marcus', name: 'Marcus', role: 'Groom', emoji: '🤵' },
-      { id: 'jake', name: 'Jake', role: 'Best man', emoji: '🤵‍♂️' },
-      { id: 'sofia', name: 'Sofia', role: 'Maid of honor', emoji: '👗' },
+      { id: 'reed', name: 'Dr. Reed', role: 'Officiant', icon: Gavel },
+      { id: 'elena', name: 'Elena', role: 'Bride', icon: Heart },
+      { id: 'marcus', name: 'Marcus', role: 'Groom', icon: User },
+      { id: 'jake', name: 'Jake', role: 'Best man', icon: User },
+      { id: 'sofia', name: 'Sofia', role: 'Maid of honor', icon: Sparkles },
     ],
     correctPlacements: [
       { characterId: 'reed', position: 'center', emotion: 'neutral' },
@@ -171,10 +188,10 @@ const ALL_SCENES: SceneSetup[] = [
     description: 'Students tell ghost stories around a campfire.',
     directions: 'Narrator Emma sits center, looking excited as she tells the story. Scared student Leo is to the far left, looking sad and frightened. Brave student Zara sits to the right of center, neutral and unimpressed. Camp counselor Mr. Blake stands far right, looking happy and amused.',
     characters: [
-      { id: 'emma', name: 'Emma', role: 'Narrator', emoji: '📖' },
-      { id: 'leo', name: 'Leo', role: 'Scared listener', emoji: '😨' },
-      { id: 'zara', name: 'Zara', role: 'Brave student', emoji: '💪' },
-      { id: 'blake', name: 'Mr. Blake', role: 'Counselor', emoji: '🏕️' },
+      { id: 'emma', name: 'Emma', role: 'Narrator', icon: BookOpen },
+      { id: 'leo', name: 'Leo', role: 'Scared listener', icon: User },
+      { id: 'zara', name: 'Zara', role: 'Brave student', icon: Shield },
+      { id: 'blake', name: 'Mr. Blake', role: 'Counselor', icon: Tent },
     ],
     correctPlacements: [
       { characterId: 'emma', position: 'center', emotion: 'excited' },
@@ -189,10 +206,10 @@ const ALL_SCENES: SceneSetup[] = [
     description: 'A panel interview at a big corporation.',
     directions: 'Candidate Nia sits center, looking neutral but composed. The CEO Ms. Tanaka is center-left, with a neutral expression. HR manager Dave is on the far left, smiling and happy. The technical lead Omar is center-right, with a neutral, analytical expression.',
     characters: [
-      { id: 'nia', name: 'Nia', role: 'Candidate', emoji: '💼' },
-      { id: 'tanaka', name: 'Ms. Tanaka', role: 'CEO', emoji: '👩‍💼' },
-      { id: 'dave', name: 'Dave', role: 'HR Manager', emoji: '📋' },
-      { id: 'omar', name: 'Omar', role: 'Tech Lead', emoji: '💻' },
+      { id: 'nia', name: 'Nia', role: 'Candidate', icon: Briefcase },
+      { id: 'tanaka', name: 'Ms. Tanaka', role: 'CEO', icon: User },
+      { id: 'dave', name: 'Dave', role: 'HR Manager', icon: ClipboardList },
+      { id: 'omar', name: 'Omar', role: 'Tech Lead', icon: Laptop },
     ],
     correctPlacements: [
       { characterId: 'nia', position: 'center', emotion: 'neutral' },
@@ -382,7 +399,7 @@ export default function SceneDirector({
                     {POSITIONS.map((pos) => {
                       const charHere = currentScene.characters.find((c) => placements[c.id] === pos)
                       const emotion = charHere ? emotions[charHere.id] : undefined
-                      const emotionEmoji = EMOTIONS.find((e) => e.value === emotion)?.emoji
+                      const EmotionIcon = EMOTIONS.find((e) => e.value === emotion)?.icon
                       return (
                         <button
                           key={pos}
@@ -398,9 +415,9 @@ export default function SceneDirector({
                         >
                           {charHere ? (
                             <div className="flex flex-col items-center gap-1">
-                              <span className="text-2xl">{charHere.emoji}</span>
+                              {(() => { const Icon = charHere.icon; return <Icon className="h-6 w-6 text-amber-300" />; })()}
                               <span className="text-[10px] font-bold text-white/80">{charHere.name}</span>
-                              {emotionEmoji && <span className="text-lg">{emotionEmoji}</span>}
+                              {EmotionIcon && <EmotionIcon className="h-5 w-5 text-white/70" />}
                             </div>
                           ) : (
                             <span className="text-[9px] text-white/30">{POSITION_LABELS[pos]}</span>
@@ -429,7 +446,7 @@ export default function SceneDirector({
                             : 'border-white/10 bg-white/5 hover:border-white/20',
                         )}
                       >
-                        <span className="text-xl">{c.emoji}</span>
+                        {(() => { const Icon = c.icon; return <Icon className="h-5 w-5 text-white/80" />; })()}
                         <div>
                           <p className="text-xs font-bold text-white/80">{c.name}</p>
                           <p className="text-[10px] text-white/40">{c.role}</p>
@@ -447,7 +464,7 @@ export default function SceneDirector({
                   </p>
                   {currentScene.characters.map((c) => (
                     <div key={c.id} className="flex items-center gap-3 rounded-lg border border-white/5 bg-white/3 px-3 py-2">
-                      <span className="text-sm">{c.emoji}</span>
+                      {(() => { const Icon = c.icon; return <Icon className="h-4 w-4 text-white/60" />; })()}
                       <span className="w-16 text-xs font-bold text-white/60">{c.name}</span>
                       <div className="flex gap-1.5">
                         {EMOTIONS.map((em) => (
@@ -462,7 +479,7 @@ export default function SceneDirector({
                             )}
                             title={em.label}
                           >
-                            {em.emoji}
+                            {(() => { const Icon = em.icon; return <Icon className="h-4 w-4" />; })()}
                           </button>
                         ))}
                       </div>
@@ -507,14 +524,14 @@ export default function SceneDirector({
                     const emoCorrect = playerEmo === cp.emotion
                     return (
                       <div key={cp.characterId} className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs">
-                        <span className="text-base">{char?.emoji}</span>
+                        {(() => { const Icon = char?.icon || User; return <Icon className="h-4 w-4 text-white/60" />; })()}
                         <span className="w-20 font-bold text-white/60">{char?.name}</span>
                         <div className="flex gap-3">
                           <span className={cn(posCorrect ? 'text-emerald-400' : 'text-red-400')}>
                             {posCorrect ? '✓' : '✗'} {POSITION_LABELS[playerPos!]} {!posCorrect && `→ ${POSITION_LABELS[cp.position]}`}
                           </span>
                           <span className={cn(emoCorrect ? 'text-emerald-400' : 'text-red-400')}>
-                            {emoCorrect ? '✓' : '✗'} {EMOTIONS.find((e) => e.value === playerEmo)?.emoji} {!emoCorrect && `→ ${EMOTIONS.find((e) => e.value === cp.emotion)?.emoji}`}
+                            {emoCorrect ? '✓' : '✗'} {(() => { const Icon = EMOTIONS.find((e) => e.value === playerEmo)?.icon; return Icon ? <Icon className="h-3 w-3 inline" /> : null; })()} {!emoCorrect && <>{' → '}{(() => { const Icon = EMOTIONS.find((e) => e.value === cp.emotion)?.icon; return Icon ? <Icon className="h-3 w-3 inline" /> : null; })()}</>}
                           </span>
                         </div>
                       </div>

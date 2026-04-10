@@ -1,12 +1,13 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { ARCHETYPE_COLORS } from '@/lib/mock-data'
 import {
-  MOCK_STUDENTS,
-  MOCK_ACTIVITIES,
-  ARCHETYPE_COLORS,
-  getArchetypeDistribution,
-} from '@/lib/mock-data'
+  useCurrentUser,
+  useTeacherStudents,
+  useTeacherActivities,
+  getDistributionFromStudents,
+} from '@/hooks/use-supabase-data'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Users,
@@ -27,46 +28,6 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
-
-const totalStudents = MOCK_STUDENTS.length
-const avgMastery = Math.round(
-  MOCK_STUDENTS.reduce((sum, s) => sum + s.progress, 0) / totalStudents
-)
-const activeGroups = 4
-const needsAttention = MOCK_STUDENTS.filter(
-  (s) => s.status === 'needs_attention'
-).length
-
-const statsCards = [
-  {
-    label: 'Total Students',
-    value: totalStudents,
-    icon: Users,
-    color: 'purple' as const,
-    suffix: '',
-  },
-  {
-    label: 'Average Mastery',
-    value: avgMastery,
-    icon: Target,
-    color: 'cyan' as const,
-    suffix: '%',
-  },
-  {
-    label: 'Active Groups',
-    value: activeGroups,
-    icon: Users2,
-    color: 'purple' as const,
-    suffix: '',
-  },
-  {
-    label: 'Needs Attention',
-    value: needsAttention,
-    icon: AlertTriangle,
-    color: 'red' as const,
-    suffix: '',
-  },
-]
 
 const activityIcons = {
   submission: FileText,
@@ -94,7 +55,44 @@ function CustomTooltip({
 }
 
 export function TeacherOverview() {
-  const distribution = getArchetypeDistribution()
+  const { user, loading: userLoading } = useCurrentUser()
+  const { students, loading: studentsLoading } = useTeacherStudents(user?.id ?? '')
+  const { activities, loading: activitiesLoading } = useTeacherActivities(user?.id ?? '')
+
+  const loading = userLoading || studentsLoading || activitiesLoading
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
+  const totalStudents = students.length
+  const avgMastery = totalStudents > 0
+    ? Math.round(students.reduce((sum, s) => sum + s.progress, 0) / totalStudents)
+    : 0
+  const activeGroups = 0
+  const needsAttention = students.filter((s) => s.status === 'needs_attention').length
+
+  const statsCards = [
+    { label: 'Total Students', value: totalStudents, icon: Users, color: 'purple' as const, suffix: '' },
+    { label: 'Average Mastery', value: avgMastery, icon: Target, color: 'cyan' as const, suffix: '%' },
+    { label: 'Active Groups', value: activeGroups, icon: Users2, color: 'purple' as const, suffix: '' },
+    { label: 'Needs Attention', value: needsAttention, icon: AlertTriangle, color: 'red' as const, suffix: '' },
+  ]
+
+  const distribution = getDistributionFromStudents(students)
+
+  if (students.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+        <Users className="h-12 w-12 mb-4 opacity-50" />
+        <p>No students enrolled yet</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -236,7 +234,7 @@ export function TeacherOverview() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {MOCK_ACTIVITIES.map((activity) => {
+              {activities.map((activity) => {
                 const Icon = activityIcons[activity.type]
                 const isAlert = activity.type === 'alert'
                 return (

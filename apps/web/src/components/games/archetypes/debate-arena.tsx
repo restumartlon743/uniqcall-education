@@ -12,6 +12,7 @@ import {
   Swords,
   GripVertical,
   ThumbsUp,
+  ThumbsDown,
 } from 'lucide-react'
 import type { GameDifficulty } from '@/lib/game-data'
 
@@ -414,7 +415,7 @@ export default function DebateArena({
                   'rounded-full px-3 py-0.5 text-xs font-bold',
                   isPro ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400',
                 )}>
-                  {isPro ? '👍 PRO' : '👎 CON'}
+                  {isPro ? <><ThumbsUp className="mr-1 inline h-3 w-3" /> PRO</> : <><ThumbsDown className="mr-1 inline h-3 w-3" /> CON</>}
                 </span>
               </div>
             </div>

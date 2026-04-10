@@ -2,7 +2,10 @@
 
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { MOCK_PARENT_CHILD } from '@/lib/mock-data'
+import {
+  useCurrentUser,
+  useParentChildren,
+} from '@/hooks/use-supabase-data'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -15,9 +18,8 @@ import {
   Shield,
   Sparkles,
   Check,
+  Users,
 } from 'lucide-react'
-
-const child = MOCK_PARENT_CHILD
 
 interface NotificationPref {
   key: string
@@ -36,9 +38,21 @@ const defaultPrefs: NotificationPref[] = [
 ]
 
 export function ParentSettings() {
+  const { user, profile, loading: userLoading } = useCurrentUser()
+  const { children, loading: childrenLoading } = useParentChildren(user?.id ?? '')
   const [prefs, setPrefs] = useState(defaultPrefs)
   const [inviteCode, setInviteCode] = useState('')
   const [linkSuccess, setLinkSuccess] = useState(false)
+
+  const isLoading = userLoading || childrenLoading
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+      </div>
+    )
+  }
 
   function togglePref(key: string) {
     setPrefs((prev) =>
@@ -81,10 +95,10 @@ export function ParentSettings() {
                 <User className="h-8 w-8 text-purple-400" />
               </div>
               <div>
-                <p className="text-lg font-semibold text-white">Bapak Pratama</p>
+                <p className="text-lg font-semibold text-white">{profile?.full_name || 'Parent'}</p>
                 <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                   <Mail className="h-3 w-3" />
-                  pratama.family@gmail.com
+                  {user?.email || 'No email'}
                 </div>
               </div>
             </div>
@@ -106,22 +120,31 @@ export function ParentSettings() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Current child */}
-            <div className="flex items-center gap-3 rounded-xl border border-purple-500/20 bg-purple-500/5 p-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/15">
-                <User className="h-5 w-5 text-purple-400" />
+            {/* Current children */}
+            {children.length > 0 ? (
+              children.map((child) => (
+                <div key={child.id} className="flex items-center gap-3 rounded-xl border border-purple-500/20 bg-purple-500/5 p-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/15">
+                    <User className="h-5 w-5 text-purple-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-white">{child.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {child.className} {child.school ? `\u2022 ${child.school}` : ''}
+                    </p>
+                  </div>
+                  <Badge variant={child.archetype.code.toLowerCase() as never}>
+                    <Sparkles className="mr-1 h-3 w-3" />
+                    {child.archetype.name}
+                  </Badge>
+                </div>
+              ))
+            ) : (
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <Users className="h-8 w-8 mb-2 text-slate-600" />
+                <p className="text-sm text-slate-400">No children linked yet</p>
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-white">{child.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {child.className} • {child.schoolName}
-                </p>
-              </div>
-              <Badge variant={child.archetype.code.toLowerCase() as never}>
-                <Sparkles className="mr-1 h-3 w-3" />
-                {child.archetype.name}
-              </Badge>
-            </div>
+            )}
 
             {/* Link new child */}
             <div className="space-y-2">

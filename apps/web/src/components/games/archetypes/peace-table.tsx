@@ -11,14 +11,29 @@ import {
   Users,
   ThumbsUp,
   ThumbsDown,
+  Drama,
+  Music,
+  Palette,
+  UserRound,
+  Mountain,
+  Wheat,
+  Home,
+  BookOpen,
+  Briefcase,
+  Landmark,
+  Castle,
+  Tent,
+  School,
+  Megaphone,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import type { GameDifficulty } from '@/lib/game-data'
 
 // ─── Types ────────────────────────────────────────────────────
 
 interface Party {
   name: string
-  emoji: string
+  icon: LucideIcon
   demand: string
   hiddenInterest: string
   proposals: string[]
@@ -52,21 +67,21 @@ const ALL_SCENARIOS: NegotiationScenario[] = [
     parties: [
       {
         name: 'Drama Club',
-        emoji: '🎭',
+        icon: Drama,
         demand: 'We need $500 for costumes and stage design.',
         hiddenInterest: 'We mainly need the stage area reserved and basic costumes.',
         proposals: ['Full $500 budget for drama', 'Shared stage with music club', 'Use recycled costumes + $200 budget', 'Cancel drama performance'],
       },
       {
         name: 'Music Club',
-        emoji: '🎵',
+        icon: Music,
         demand: 'We need $400 for equipment rental and sound system.',
         hiddenInterest: 'We already have instruments; we mainly need the sound system.',
         proposals: ['Full $400 budget for music', 'Share sound system with drama', 'Use school speakers + $150 budget', 'Cancel music performance'],
       },
       {
         name: 'Art Club',
-        emoji: '🎨',
+        icon: Palette,
         demand: 'We need $300 for supplies for a gallery exhibition.',
         hiddenInterest: 'We have some supplies; we mainly need display space.',
         proposals: ['Full $300 budget for art', 'Gallery in school hallway (free)', 'Use donated supplies + $100', 'Cancel art exhibition'],
@@ -86,21 +101,21 @@ const ALL_SCENARIOS: NegotiationScenario[] = [
     parties: [
       {
         name: 'Parents Group',
-        emoji: '👨‍👩‍👧',
+        icon: Users,
         demand: 'We want safe equipment for young children under 8.',
         hiddenInterest: 'Safety and shade are the top priorities, not specific equipment.',
         proposals: ['Toddler-only playground', 'Mixed-age zones with safety barriers', 'Add shade structures + soft ground', 'No changes needed'],
       },
       {
         name: 'Teens Council',
-        emoji: '🧑‍🤝‍🧑',
+        icon: Users,
         demand: 'We want a basketball court and skate ramp.',
         hiddenInterest: 'We just need a dedicated hangout space with some activity.',
         proposals: ['Full basketball court', 'Multi-sport area in separate zone', 'Climbing wall + seating area', 'No teen space'],
       },
       {
         name: 'Seniors Assoc.',
-        emoji: '👴',
+        icon: UserRound,
         demand: 'We want a quiet garden area with benches.',
         hiddenInterest: 'We need a calm space away from noise.',
         proposals: ['Full garden replacing playground', 'Garden corner with sound buffer', 'Benches along walking path', 'No senior space'],
@@ -121,21 +136,21 @@ const ALL_SCENARIOS: NegotiationScenario[] = [
     parties: [
       {
         name: 'Upstream Village',
-        emoji: '⛰️',
+        icon: Mountain,
         demand: 'We have first access and should take what we need.',
         hiddenInterest: 'We mainly need water for drinking and domestic use.',
         proposals: ['Unlimited upstream access', 'Priority drinking water + share irrigation', 'Metered equal shares', 'Downstream gets priority'],
       },
       {
         name: 'Farming Village',
-        emoji: '🌾',
+        icon: Wheat,
         demand: 'Our crops will die without 70% of the water.',
         hiddenInterest: 'We can switch to drought-resistant crops if we get 40%.',
         proposals: ['70% for farming', '40% for farming + crop switch program', 'Equal split + shared well', 'No water for farming'],
       },
       {
         name: 'Downstream Town',
-        emoji: '🏘️',
+        icon: Home,
         demand: 'We receive polluted runoff and need clean water rights.',
         hiddenInterest: 'We need a filtration system and guaranteed minimum flow.',
         proposals: ['All water treated before release', 'Shared filtration + minimum flow guarantee', 'Build separate well system', 'Accept runoff as-is'],
@@ -155,21 +170,21 @@ const ALL_SCENARIOS: NegotiationScenario[] = [
     parties: [
       {
         name: 'Students',
-        emoji: '📚',
+        icon: BookOpen,
         demand: 'Keep evening hours (6-10pm) for studying.',
         hiddenInterest: 'We need reliable study space; a quiet room elsewhere could work.',
         proposals: ['Keep all evening hours', 'Evening hours 3 days/week + study room access', 'Move to weekend-only evenings', 'No evening hours'],
       },
       {
         name: 'Working Parents',
-        emoji: '💼',
+        icon: Briefcase,
         demand: 'Keep Saturday hours for children\'s programs.',
         hiddenInterest: 'We need childcare-compatible activities on weekends.',
         proposals: ['Full Saturday hours', 'Saturday morning + partner program', 'Move to Sunday', 'Cancel weekend hours'],
       },
       {
         name: 'Senior Book Club',
-        emoji: '📖',
+        icon: BookOpen,
         demand: 'Keep weekday morning hours for our group.',
         hiddenInterest: 'We need a regular meeting space; any calm daytime slot works.',
         proposals: ['Keep all morning hours', 'Tues/Thurs mornings + community room', 'Move to afternoon slot', 'Cancel morning hours'],
@@ -190,21 +205,21 @@ const ALL_SCENARIOS: NegotiationScenario[] = [
     parties: [
       {
         name: 'Country Alpha',
-        emoji: '🏛️',
+        icon: Landmark,
         demand: 'Tax all goods entering our territory at 25%.',
         hiddenInterest: 'We need revenue but don\'t want to lose traders.',
         proposals: ['25% tax on all goods', '10% tax + shared market revenue', 'Tax-free zone with licensing fee', 'No taxes (lose revenue)'],
       },
       {
         name: 'Country Beta',
-        emoji: '🏰',
+        icon: Castle,
         demand: 'Mirror any taxes Alpha impostes. No unfair advantage.',
         hiddenInterest: 'We want equal treatment and infrastructure investment.',
         proposals: ['Mirror all taxes', 'Joint tax-free zone + shared infrastructure', 'Separate markets', 'Accept disadvantage'],
       },
       {
         name: 'Nomadic Tribe',
-        emoji: '🏕️',
+        icon: Tent,
         demand: 'No taxes — we\'ve traded here for generations.',
         hiddenInterest: 'We need guaranteed market access and respect for our trade routes.',
         proposals: ['Zero taxes for tribe', 'Small licensing fee + guaranteed stalls', 'Seasonal free-trade windows', 'Abandon market'],
@@ -224,21 +239,21 @@ const ALL_SCENARIOS: NegotiationScenario[] = [
     parties: [
       {
         name: 'School Board',
-        emoji: '🏫',
+        icon: School,
         demand: 'Full mandatory uniforms to promote equality.',
         hiddenInterest: 'We want to reduce visible economic disparity and bullying.',
         proposals: ['Full mandatory uniform', 'Dress code with affordable options', 'Uniform tops + free bottoms', 'No dress code'],
       },
       {
         name: 'Students',
-        emoji: '✊',
+        icon: Megaphone,
         demand: 'No uniforms! We want freedom of expression.',
         hiddenInterest: 'We want some personal expression and comfort.',
         proposals: ['No dress code at all', 'Free dress Fridays + casual options', 'School colors + personal accessories', 'Full uniform (unhappy)'],
       },
       {
         name: 'Parents',
-        emoji: '👨‍👩‍👧‍👦',
+        icon: Users,
         demand: 'Uniforms are expensive. We can\'t afford new ones each year.',
         hiddenInterest: 'We need affordability and hand-me-down compatibility.',
         proposals: ['School provides free uniforms', 'Subsidized basic pieces + swap program', 'Simple dress code (cheap)', 'Full-price uniforms (burden)'],
@@ -418,7 +433,7 @@ export default function PeaceTable({
                 return (
                   <div key={party.name} className="rounded-xl border border-white/10 bg-white/5 p-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{party.emoji}</span>
+                      {(() => { const Icon = party.icon; return <Icon className="h-5 w-5" />; })()}
                       <span className="text-sm font-bold text-white/80">{party.name}</span>
                     </div>
                     <p className="mt-1 text-xs text-white/60">

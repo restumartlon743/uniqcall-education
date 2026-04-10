@@ -15,21 +15,8 @@ export default async function DashboardLayout({
 }) {
   const supabase = await createClient()
 
-  // Demo mode: render with mock user when Supabase is not configured
   if (!supabase) {
-    return (
-      <>
-        <AnimatedBackground variant="dashboard" />
-        <DashboardShell
-          role="teacher"
-          userName="Demo User"
-          userEmail="demo@uniqcall.edu"
-          avatarUrl={undefined}
-        >
-          {children}
-        </DashboardShell>
-      </>
-    )
+    redirect('/login')
   }
 
   const {

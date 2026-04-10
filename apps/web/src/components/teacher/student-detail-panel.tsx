@@ -1,11 +1,11 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import type { MockStudent } from '@/lib/mock-data'
 import {
   getArchetypeBadgeVariant,
   ARCHETYPE_INTERVENTIONS,
 } from '@/lib/mock-data'
+import type { StudentData } from '@/hooks/use-supabase-data'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { X, CheckCircle2, Circle } from 'lucide-react'
@@ -26,7 +26,7 @@ import {
 import { useState } from 'react'
 
 interface StudentDetailPanelProps {
-  student: MockStudent
+  student: StudentData
   onClose: () => void
 }
 

@@ -765,7 +765,7 @@ export const MOCK_PARENT_CHILD: MockParentChild = {
   xp: 2450,
   xpToNextLevel: 3000,
   mood: 'Feeling Confident today!',
-  moodEmoji: '😊',
+  moodEmoji: 'smile',
   varkProfile: { visual: 25, auditory: 15, readWrite: 40, kinesthetic: 20 },
   cognitiveParams: {
     analytical: 85,

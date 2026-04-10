@@ -5,6 +5,8 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Bell, LogOut, Search, User } from 'lucide-react'
 import { useState } from 'react'
+import { useLanguage } from '@/lib/i18n/context'
+import { LanguageToggle } from '@/components/ui/language-toggle'
 
 interface TopBarProps {
   title: string
@@ -15,6 +17,7 @@ interface TopBarProps {
 export function TopBar({ title, userName, avatarUrl }: TopBarProps) {
   const router = useRouter()
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const { t } = useLanguage()
 
   async function handleLogout() {
     const supabase = createClient()
@@ -38,7 +41,7 @@ export function TopBar({ title, userName, avatarUrl }: TopBarProps) {
           <Search className="h-4 w-4 text-slate-500" />
           <input
             type="text"
-            placeholder="Cari..."
+            placeholder={t('common.search_placeholder')}
             className="w-44 bg-transparent text-sm text-white placeholder:text-slate-600 focus:outline-none"
           />
         </div>
@@ -48,6 +51,9 @@ export function TopBar({ title, userName, avatarUrl }: TopBarProps) {
           <Bell className="h-5 w-5" />
           <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-cyan-400" />
         </button>
+
+        {/* Language Toggle */}
+        <LanguageToggle />
 
         {/* User dropdown */}
         <div className="relative">
@@ -84,14 +90,14 @@ export function TopBar({ title, userName, avatarUrl }: TopBarProps) {
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
                 >
                   <User className="h-4 w-4" />
-                  Profil
+                  {t('settings.profile')}
                 </button>
                 <button
                   onClick={handleLogout}
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 transition-colors hover:bg-red-500/10"
                 >
                   <LogOut className="h-4 w-4" />
-                  Keluar
+                  {t('common.sign_out')}
                 </button>
               </div>
             </>

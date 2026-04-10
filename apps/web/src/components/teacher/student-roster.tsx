@@ -3,11 +3,14 @@
 import { useState, useMemo } from 'react'
 import { cn } from '@/lib/utils'
 import {
-  MOCK_STUDENTS,
   getArchetypeBadgeVariant,
   getProgressColor,
 } from '@/lib/mock-data'
-import type { MockStudent } from '@/lib/mock-data'
+import {
+  useCurrentUser,
+  useTeacherStudents,
+} from '@/hooks/use-supabase-data'
+import type { StudentData } from '@/hooks/use-supabase-data'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectOption } from '@/components/ui/select'
@@ -21,7 +24,7 @@ import {
   TableCell,
 } from '@/components/ui/table'
 import { StudentDetailPanel } from '@/components/teacher/student-detail-panel'
-import { Search, AlertTriangle } from 'lucide-react'
+import { Search, AlertTriangle, Users } from 'lucide-react'
 
 const ARCHETYPE_OPTIONS = [
   'All Archetypes',
@@ -43,15 +46,19 @@ const ARCHETYPE_OPTIONS = [
 const STATUS_OPTIONS = ['All Status', 'Active', 'Needs Attention']
 
 export function StudentRoster() {
+  const { user, loading: userLoading } = useCurrentUser()
+  const { students, loading: studentsLoading } = useTeacherStudents(user?.id ?? '')
+  const loading = userLoading || studentsLoading
+
   const [search, setSearch] = useState('')
   const [archetypeFilter, setArchetypeFilter] = useState('All Archetypes')
   const [statusFilter, setStatusFilter] = useState('All Status')
-  const [selectedStudent, setSelectedStudent] = useState<MockStudent | null>(
+  const [selectedStudent, setSelectedStudent] = useState<StudentData | null>(
     null
   )
 
   const filteredStudents = useMemo(() => {
-    return MOCK_STUDENTS.filter((s) => {
+    return students.filter((s) => {
       const matchesSearch = s.name
         .toLowerCase()
         .includes(search.toLowerCase())
@@ -64,7 +71,24 @@ export function StudentRoster() {
         (statusFilter === 'Needs Attention' && s.status === 'needs_attention')
       return matchesSearch && matchesArchetype && matchesStatus
     })
-  }, [search, archetypeFilter, statusFilter])
+  }, [search, archetypeFilter, statusFilter, students])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
+  if (students.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+        <Users className="h-12 w-12 mb-4 opacity-50" />
+        <p>No students enrolled yet</p>
+      </div>
+    )
+  }
 
   return (
     <div className="flex gap-0">

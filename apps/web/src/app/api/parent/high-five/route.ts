@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     .insert({
       user_id: to_student_id,
       type: 'high_five',
-      title: 'High Five! 🙌',
+      title: 'High Five!',
       body: message || `${profile!.full_name} sent you a high five!`,
       data: { entity_type: 'high_five', entity_id: highFive.id },
     })

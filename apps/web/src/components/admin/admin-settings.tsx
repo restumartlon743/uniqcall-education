@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { MOCK_SYSTEM_CONFIG, type MockSystemConfig } from '@/lib/mock-data'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -48,12 +47,19 @@ function ToggleSwitch({
 }
 
 export function AdminSettings() {
-  const [config, setConfig] = useState<MockSystemConfig>(MOCK_SYSTEM_CONFIG)
+  const [config, setConfig] = useState({
+    cognitiveModuleEnabled: true,
+    varkModuleEnabled: true,
+    interestModuleEnabled: true,
+    gamificationEnabled: true,
+    xpMultiplier: 1.0,
+    badgesEnabled: true,
+  })
   const [xpMultiplier, setXpMultiplier] = useState(
     String(config.xpMultiplier)
   )
 
-  function toggle(key: keyof MockSystemConfig) {
+  function toggle(key: keyof typeof config) {
     setConfig((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 

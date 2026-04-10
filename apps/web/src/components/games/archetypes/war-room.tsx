@@ -10,6 +10,7 @@ import {
   Target,
   Mountain,
   Waves,
+  Crosshair,
 } from 'lucide-react'
 import type { GameDifficulty } from '@/lib/game-data'
 
@@ -49,8 +50,8 @@ interface WarRoomProps {
 
 const UNIT_STATS: Record<UnitType, { hp: number; attack: number; range: number; speed: number; symbol: string }> = {
   infantry: { hp: 10, attack: 3, range: 1, speed: 1, symbol: '⚔' },
-  cavalry:  { hp: 8,  attack: 4, range: 1, speed: 2, symbol: '🐴' },
-  archer:   { hp: 6,  attack: 3, range: 2, speed: 1, symbol: '🏹' },
+  cavalry:  { hp: 8,  attack: 4, range: 1, speed: 2, symbol: '♞' },
+  archer:   { hp: 6,  attack: 3, range: 2, speed: 1, symbol: '→' },
 }
 
 function getGridSize(difficulty: GameDifficulty): number {
@@ -254,7 +255,7 @@ export default function WarRoom({
           if (grid[row][col].hasFlag && grid[row][col].flagTeam !== 'player') {
             setCapturedFlags((f) => f + 1)
             grid[row][col].flagTeam = 'player'
-            addLog('🚩 Flag captured!')
+            addLog('Flag captured!')
           }
 
           setPhase('attack')
@@ -280,7 +281,7 @@ export default function WarRoom({
           addLog(`${updatedUnit.type} attacks ${target.type} for ${damage} dmg!`)
           if (newHp <= 0) {
             setEnemiesDefeated((d) => d + 1)
-            addLog(`💀 Enemy ${target.type} defeated!`)
+            addLog(`Enemy ${target.type} defeated!`)
           }
         }
         // End unit's turn
@@ -310,7 +311,7 @@ export default function WarRoom({
         const damage = enemy.attack + Math.floor(Math.random() * 2)
         target.hp = Math.max(0, target.hp - damage)
         addLog(`Enemy ${enemy.type} attacks your ${target.type} for ${damage} dmg!`)
-        if (target.hp <= 0) addLog(`💀 Your ${target.type} was defeated!`)
+        if (target.hp <= 0) addLog(`Your ${target.type} was defeated!`)
         continue
       }
 
@@ -365,7 +366,7 @@ export default function WarRoom({
       setPhase('done')
       onScoreUpdate(Math.round(finalScore), maxScore)
       onGameOver(Math.round(finalScore), maxScore)
-      addLog(remainingEnemies.length === 0 ? '🏆 Victory!' : newTurn > maxTurns ? '⏰ Time\'s up!' : '💀 Defeat!')
+      addLog(remainingEnemies.length === 0 ? 'Victory!' : newTurn > maxTurns ? 'Time\'s up!' : 'Defeat!')
     } else {
       setTurn(newTurn)
       setMovedUnits(new Set())
@@ -515,9 +516,9 @@ export default function WarRoom({
 
       {/* Legend */}
       <div className="flex flex-wrap gap-3 text-[10px] text-white/30">
-        <span>⚔ Infantry</span>
-        <span>🐴 Cavalry</span>
-        <span>🏹 Archer</span>
+        <span><Swords className="mr-1 inline h-3 w-3" /> Infantry</span>
+        <span>♞ Cavalry</span>
+        <span><Crosshair className="mr-1 inline h-3 w-3" /> Archer</span>
         <span className="flex items-center gap-1"><Mountain className="h-3 w-3" /> Mountain</span>
         <span className="flex items-center gap-1"><Waves className="h-3 w-3" /> River</span>
         <span className="flex items-center gap-1"><Flag className="h-3 w-3" /> Flag</span>

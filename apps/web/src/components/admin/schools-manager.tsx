@@ -1,10 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import {
-  MOCK_SCHOOLS,
-  type MockSchool,
-} from '@/lib/mock-data'
+import { useAdminSchools } from '@/hooks/use-supabase-data'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -30,23 +27,22 @@ import {
   Plus,
   Search,
   Pencil,
-  Trash2,
   Building2,
   MapPin,
 } from 'lucide-react'
 
 export function SchoolsManager() {
-  const [schools, setSchools] = useState<MockSchool[]>(MOCK_SCHOOLS)
+  const { schools, loading } = useAdminSchools()
   const [search, setSearch] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingSchool, setEditingSchool] = useState<MockSchool | null>(null)
+  const [editingSchool, setEditingSchool] = useState<Record<string, any> | null>(null)
   const [formName, setFormName] = useState('')
   const [formAddress, setFormAddress] = useState('')
 
   const filtered = schools.filter(
     (s) =>
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.address.toLowerCase().includes(search.toLowerCase())
+      (s.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.address || '').toLowerCase().includes(search.toLowerCase())
   )
 
   function openAdd() {
@@ -56,40 +52,25 @@ export function SchoolsManager() {
     setDialogOpen(true)
   }
 
-  function openEdit(school: MockSchool) {
+  function openEdit(school: Record<string, any>) {
     setEditingSchool(school)
     setFormName(school.name)
-    setFormAddress(school.address)
+    setFormAddress(school.address || '')
     setDialogOpen(true)
   }
 
   function handleSave() {
     if (!formName.trim() || !formAddress.trim()) return
-
-    if (editingSchool) {
-      setSchools((prev) =>
-        prev.map((s) =>
-          s.id === editingSchool.id
-            ? { ...s, name: formName, address: formAddress }
-            : s
-        )
-      )
-    } else {
-      const newSchool: MockSchool = {
-        id: `sch${Date.now()}`,
-        name: formName,
-        address: formAddress,
-        teacherCount: 0,
-        studentCount: 0,
-        createdAt: new Date().toISOString().split('T')[0],
-      }
-      setSchools((prev) => [...prev, newSchool])
-    }
+    // In a real app this would call a Supabase insert/update
     setDialogOpen(false)
   }
 
-  function handleDelete(id: string) {
-    setSchools((prev) => prev.filter((s) => s.id !== id))
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+      </div>
+    )
   }
 
   return (
@@ -148,7 +129,7 @@ export function SchoolsManager() {
                     <Badge variant="creative">{school.studentCount}</Badge>
                   </TableCell>
                   <TableCell className="text-sm text-slate-400">
-                    {school.createdAt}
+                    {school.createdAt ? new Date(school.createdAt).toLocaleDateString() : 'N/A'}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
@@ -158,13 +139,6 @@ export function SchoolsManager() {
                         onClick={() => openEdit(school)}
                       >
                         <Pencil className="h-3.5 w-3.5 text-slate-400" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-xs"
-                        onClick={() => handleDelete(school.id)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5 text-red-400" />
                       </Button>
                     </div>
                   </TableCell>

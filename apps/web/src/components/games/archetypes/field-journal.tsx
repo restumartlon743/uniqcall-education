@@ -11,7 +11,20 @@ import {
   Search,
   Leaf,
   Eye,
+  PawPrint,
+  Landmark,
+  Zap,
+  TreePalm,
+  Waves,
+  Snowflake,
+  Mountain,
+  TreeDeciduous,
+  Sun as SunIcon,
+  Fish,
+  Pin,
+  Flame,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import type { GameDifficulty } from '@/lib/game-data'
 
 // ─── Types ────────────────────────────────────────────────────
@@ -32,7 +45,7 @@ interface Discovery {
 interface Environment {
   id: string
   name: string
-  emoji: string
+  icon: LucideIcon
   sceneDescription: string
   detailedObservation: string
   discoveries: Discovery[]
@@ -47,18 +60,18 @@ interface FieldJournalProps {
 
 // ─── Data ─────────────────────────────────────────────────────
 
-const CATEGORY_INFO: Record<Category, { label: string; emoji: string; color: string }> = {
-  fauna: { label: 'Fauna', emoji: '🐾', color: 'text-amber-400' },
-  flora: { label: 'Flora', emoji: '🌿', color: 'text-emerald-400' },
-  artifact: { label: 'Artifact', emoji: '🏺', color: 'text-purple-400' },
-  phenomenon: { label: 'Phenomenon', emoji: '⚡', color: 'text-cyan-400' },
+const CATEGORY_INFO: Record<Category, { label: string; icon: LucideIcon; color: string }> = {
+  fauna: { label: 'Fauna', icon: PawPrint, color: 'text-amber-400' },
+  flora: { label: 'Flora', icon: Leaf, color: 'text-emerald-400' },
+  artifact: { label: 'Artifact', icon: Landmark, color: 'text-purple-400' },
+  phenomenon: { label: 'Phenomenon', icon: Zap, color: 'text-cyan-400' },
 }
 
 const ALL_ENVIRONMENTS: Environment[] = [
   {
     id: 'e1',
     name: 'Tropical Rainforest',
-    emoji: '🌴',
+    icon: TreePalm,
     sceneDescription: 'A dense canopy blocks most sunlight. The air is thick and humid. Vines cascade from towering trees, and the chorus of insects fills the air.',
     detailedObservation: 'Looking closer, iridescent beetles crawl along a fallen log. Strange bracket fungi glow faintly in the shade. A carved stone is half-buried in the soil near the roots. Lightning occasionally illuminates bioluminescent spores drifting through the canopy.',
     discoveries: [
@@ -73,7 +86,7 @@ const ALL_ENVIRONMENTS: Environment[] = [
   {
     id: 'e2',
     name: 'Deep Ocean Trench',
-    emoji: '🌊',
+    icon: Waves,
     sceneDescription: 'Darkness surrounds the submersible. Pressure readings climb. Occasional flashes of light pierce the abyss from unknown sources.',
     detailedObservation: 'The spotlight reveals tube worms clustered around a hydrothermal vent. An anglerfish drifts past with its bio-lantern. Strange mineral formations jut from the seafloor. Periodic pressure waves suggest tectonic movement below.',
     discoveries: [
@@ -89,7 +102,7 @@ const ALL_ENVIRONMENTS: Environment[] = [
   {
     id: 'e3',
     name: 'Ancient Ruins City',
-    emoji: '🏛️',
+    icon: Landmark,
     sceneDescription: 'Crumbling stone columns line a wide avenue. Moss covers intricate carvings. The wind carries dust through empty doorways.',
     detailedObservation: 'A sundial still casts accurate shadows. Tiny lizards bask on warm stones. Hardy fig trees have split ancient walls. Faded murals depict astronomical events. An echo from the central chamber suggests hidden passages.',
     discoveries: [
@@ -104,7 +117,7 @@ const ALL_ENVIRONMENTS: Environment[] = [
   {
     id: 'e4',
     name: 'Arctic Tundra',
-    emoji: '❄️',
+    icon: Snowflake,
     sceneDescription: 'A vast expanse of white stretches to the horizon. Wind-sculpted snowdrifts form strange patterns. The air is biting cold and crystal clear.',
     detailedObservation: 'Arctic fox tracks lead to a burrow. Lichen patches color the exposed rocks. A rusted weather station pokes from the snow. The northern lights shimmer on the horizon. Frost crystals form perfect hexagonal patterns on equipment.',
     discoveries: [
@@ -119,7 +132,7 @@ const ALL_ENVIRONMENTS: Environment[] = [
   {
     id: 'e5',
     name: 'Volcanic Island',
-    emoji: '🌋',
+    icon: Flame,
     sceneDescription: 'Black volcanic rock meets turquoise water. Steam rises from cracks in the ground. The island is young and raw.',
     detailedObservation: 'Red crabs navigate the tide pools. Pioneer plants push through cracks in the lava. Obsidian shards glint in the sun. Geysers erupt on a regular cycle. The sulfur smell is intense near the fumaroles.',
     discoveries: [
@@ -134,7 +147,7 @@ const ALL_ENVIRONMENTS: Environment[] = [
   {
     id: 'e6',
     name: 'Bamboo Forest',
-    emoji: '🎋',
+    icon: TreeDeciduous,
     sceneDescription: 'Towering bamboo stalks creak in the wind. Dappled light creates shifting patterns on the forest floor. A stream murmurs nearby.',
     detailedObservation: 'Panda scratching marks score the bamboo at regular heights. Delicate mushrooms cluster at stalk bases. An old stone lantern hides in the undergrowth. The wind creates a harmonic humming through the hollow stalks.',
     discoveries: [
@@ -148,7 +161,7 @@ const ALL_ENVIRONMENTS: Environment[] = [
   {
     id: 'e7',
     name: 'Desert Oasis',
-    emoji: '🏜️',
+    icon: SunIcon,
     sceneDescription: 'Sand dunes surround a patch of green. Palm trees shade a natural spring. The heat shimmers on the horizon.',
     detailedObservation: 'A fennec fox peers from behind a rock. Date palms hang heavy with fruit. Pottery shards litter the spring edge. Mirages dance in the distance, but one reflection seems too consistent.',
     discoveries: [
@@ -162,7 +175,7 @@ const ALL_ENVIRONMENTS: Environment[] = [
   {
     id: 'e8',
     name: 'Coral Reef Shallows',
-    emoji: '🐠',
+    icon: Fish,
     sceneDescription: 'Crystal clear water reveals a kaleidoscope of coral formations. Fish dart between branching structures. Sunlight ripples across the sandy seabed.',
     detailedObservation: 'A clownfish guards its anemone home. Brain coral forms massive dome structures. Half-buried anchor chain creates an artificial reef. The tide patterns reveal exposed sections that glow under UV light.',
     discoveries: [
@@ -176,7 +189,7 @@ const ALL_ENVIRONMENTS: Environment[] = [
   {
     id: 'e9',
     name: 'Mountain Cloud Forest',
-    emoji: '⛰️',
+    icon: Mountain,
     sceneDescription: 'Mist clings to everything. Moss-draped trees emerge like ghosts from the fog. The altitude makes breathing deliberate.',
     detailedObservation: 'A quetzal perches on a branch with its long tail trailing. Epiphytic orchids cling to every surface. A Mayan jade figure lies in a stream bed. Cloud condensation on leaves creates a constant drip — a micro water cycle in action.',
     discoveries: [
@@ -345,7 +358,7 @@ export default function FieldJournal({
           </p>
           {envScores.map((s, i) => (
             <div key={i} className="flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-2">
-              <span className="text-xs text-white/60">{environments[i]?.emoji} {environments[i]?.name}</span>
+              <span className="text-xs text-white/60">{environments[i]?.icon && (() => { const Icon = environments[i].icon; return <Icon className="h-3 w-3 inline mr-1" />; })()}{environments[i]?.name}</span>
               <div className="flex gap-3 text-xs">
                 <span className="text-cyan-300">Found: {s.found}</span>
                 <span className="text-emerald-300">Cataloged: {s.categorized}</span>
@@ -367,7 +380,7 @@ export default function FieldJournal({
             <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-5">
               <div className="flex items-center gap-2 text-sm font-bold text-cyan-300">
                 <Notebook className="h-4 w-4" />
-                <span className="text-lg">{currentEnv.emoji}</span>
+                {(() => { const Icon = currentEnv.icon; return <Icon className="h-5 w-5 text-cyan-300" />; })()}
                 Environment {envIndex + 1}: {currentEnv.name}
               </div>
               <p className="mt-2 text-sm leading-relaxed text-white/80">{currentEnv.sceneDescription}</p>
@@ -398,8 +411,8 @@ export default function FieldJournal({
                       >
                         <div className="flex items-center gap-2">
                           {isFound && <CheckCircle2 className="h-3 w-3 text-emerald-400" />}
-                          <span className="text-xs font-bold text-white/80">
-                            {d.multiStep ? '🔍' : d.hidden ? '👁️' : '📌'} {d.name}
+                          <span className="text-xs font-bold text-white/80 flex items-center gap-1">
+                            {d.multiStep ? <Search className="h-3 w-3 inline" /> : d.hidden ? <Eye className="h-3 w-3 inline" /> : <Pin className="h-3 w-3 inline" />} {d.name}
                           </span>
                         </div>
                         <p className="text-[10px] text-white/40">{d.clue}</p>
@@ -459,7 +472,7 @@ export default function FieldJournal({
                                     : 'border-white/10 bg-white/5 text-white/40 hover:border-white/20',
                                 )}
                               >
-                                {CATEGORY_INFO[cat].emoji} {CATEGORY_INFO[cat].label}
+                                {(() => { const Icon = CATEGORY_INFO[cat].icon; return <Icon className="h-3 w-3 inline" />; })()} {CATEGORY_INFO[cat].label}
                               </button>
                             ))}
                           </div>
@@ -500,8 +513,8 @@ export default function FieldJournal({
                         <span className="w-32 font-bold text-white/60">{d.name}</span>
                         {wasFound && (
                           <span className={cn(catCorrect ? 'text-emerald-400' : 'text-red-400')}>
-                            {CATEGORY_INFO[categorizations[key] || d.category].emoji}
-                            {!catCorrect && ` → ${CATEGORY_INFO[d.category].emoji} ${CATEGORY_INFO[d.category].label}`}
+                            {(() => { const Icon = CATEGORY_INFO[categorizations[key] || d.category].icon; return <Icon className="h-3 w-3 inline" />; })()}
+                            {!catCorrect && <>{' → '}{(() => { const Icon = CATEGORY_INFO[d.category].icon; return <Icon className="h-3 w-3 inline" />; })()} {CATEGORY_INFO[d.category].label}</>}
                           </span>
                         )}
                       </div>

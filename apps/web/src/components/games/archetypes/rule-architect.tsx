@@ -13,6 +13,10 @@ import {
   Frown,
   Meh,
   Smile,
+  Store,
+  Home,
+  Baby,
+  UserRound,
 } from 'lucide-react'
 import type { GameDifficulty } from '@/lib/game-data'
 
@@ -295,7 +299,7 @@ export default function RuleArchitect({
               <div>
                 <span className="font-semibold text-white/80">{npc.name}</span>
                 <span className="ml-1 text-white/40">
-                  {npc.age}y {npc.isShopkeeper ? '🏪' : ''} {npc.ownsProperty ? '🏠' : ''} {npc.hasChildren ? '👶' : ''} {npc.isElderly ? '👴' : ''}
+                  {npc.age}y {npc.isShopkeeper ? <Store className="ml-1 inline h-3 w-3" /> : ''} {npc.ownsProperty ? <Home className="ml-1 inline h-3 w-3" /> : ''} {npc.hasChildren ? <Baby className="ml-1 inline h-3 w-3" /> : ''} {npc.isElderly ? <UserRound className="ml-1 inline h-3 w-3" /> : ''}
                 </span>
                 {satResult && (
                   <span className={cn('ml-2 font-bold', satColor)}>

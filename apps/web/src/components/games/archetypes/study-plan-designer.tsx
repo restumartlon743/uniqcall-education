@@ -9,7 +9,15 @@ import {
   Star,
   TrendingUp,
   AlertTriangle,
+  Hash,
+  FlaskConical,
+  PenTool,
+  Palette,
+  PersonStanding,
+  Target,
+  User,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import type { GameDifficulty } from '@/lib/game-data'
 
 // ─── Types ────────────────────────────────────────────────────
@@ -21,7 +29,7 @@ type Day = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun'
 interface StudentProfile {
   id: string
   name: string
-  emoji: string
+  icon: LucideIcon
   strengths: Subject[]
   weaknesses: Subject[]
   availableSlots: Partial<Record<Day, TimeSlot[]>>
@@ -42,18 +50,18 @@ const DAYS: Day[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const TIME_SLOTS: TimeSlot[] = ['morning', 'afternoon', 'evening']
 const SUBJECTS: Subject[] = ['Math', 'Science', 'Language', 'Art', 'PE']
 
-const SUBJECT_INFO: Record<Subject, { emoji: string; color: string }> = {
-  Math: { emoji: '🔢', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
-  Science: { emoji: '🔬', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-  Language: { emoji: '📝', color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' },
-  Art: { emoji: '🎨', color: 'bg-pink-500/20 text-pink-300 border-pink-500/30' },
-  PE: { emoji: '🏃', color: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
+const SUBJECT_INFO: Record<Subject, { icon: LucideIcon; color: string }> = {
+  Math: { icon: Hash, color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
+  Science: { icon: FlaskConical, color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
+  Language: { icon: PenTool, color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' },
+  Art: { icon: Palette, color: 'bg-pink-500/20 text-pink-300 border-pink-500/30' },
+  PE: { icon: PersonStanding, color: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
 }
 
 const SLOT_LABELS: Record<TimeSlot, string> = {
-  morning: '🌅 AM',
-  afternoon: '☀️ PM',
-  evening: '🌙 Eve',
+  morning: 'AM',
+  afternoon: 'PM',
+  evening: 'Eve',
 }
 
 const ALL_FULL_SLOTS: Record<Day, TimeSlot[]> = {
@@ -68,40 +76,40 @@ const ALL_FULL_SLOTS: Record<Day, TimeSlot[]> = {
 
 const ALL_PROFILES: StudentProfile[] = [
   {
-    id: 'p1', name: 'Alex Kim', emoji: '👦',
+    id: 'p1', name: 'Alex Kim', icon: User,
     strengths: ['Science', 'PE'], weaknesses: ['Math'],
     availableSlots: ALL_FULL_SLOTS, goal: 'Improve math grade from C to B',
     maxSubjectsPerDay: 2,
   },
   {
-    id: 'p2', name: 'Maya Patel', emoji: '👧',
+    id: 'p2', name: 'Maya Patel', icon: User,
     strengths: ['Language', 'Art'], weaknesses: ['Science', 'Math'],
     availableSlots: { Mon: ['afternoon', 'evening'], Tue: ['morning', 'afternoon', 'evening'], Wed: ['afternoon', 'evening'], Thu: ['morning', 'afternoon', 'evening'], Fri: ['afternoon'], Sat: ['morning', 'afternoon', 'evening'], Sun: ['morning', 'afternoon'] },
     goal: 'Pass science and boost math skills',
     maxSubjectsPerDay: 2,
   },
   {
-    id: 'p3', name: 'Leo Santos', emoji: '🧑',
+    id: 'p3', name: 'Leo Santos', icon: User,
     strengths: ['Math'], weaknesses: ['Language', 'Art', 'Science'],
     availableSlots: { Mon: ['morning', 'afternoon'], Tue: ['morning', 'afternoon'], Wed: ['morning', 'afternoon'], Thu: ['morning', 'afternoon', 'evening'], Fri: ['morning'], Sat: ['morning', 'afternoon', 'evening'], Sun: ['afternoon', 'evening'] },
     goal: 'Balance out all weak subjects before exams',
     maxSubjectsPerDay: 2,
   },
   {
-    id: 'p4', name: 'Sara Chen', emoji: '👩',
+    id: 'p4', name: 'Sara Chen', icon: User,
     strengths: ['Science', 'Math', 'Language'], weaknesses: ['PE'],
     availableSlots: ALL_FULL_SLOTS, goal: 'Maintain grades and improve fitness',
     maxSubjectsPerDay: 2,
   },
   {
-    id: 'p5', name: 'David Okafor', emoji: '👨',
+    id: 'p5', name: 'David Okafor', icon: User,
     strengths: ['Art', 'PE'], weaknesses: ['Math', 'Language'],
     availableSlots: { Mon: ['afternoon', 'evening'], Tue: ['afternoon', 'evening'], Wed: ['afternoon', 'evening'], Thu: ['afternoon', 'evening'], Fri: ['afternoon', 'evening'], Sat: ['morning', 'afternoon'], Sun: ['morning', 'afternoon'] },
     goal: 'Catch up on math and language before finals',
     maxSubjectsPerDay: 2,
   },
   {
-    id: 'p6', name: 'Rina Tanaka', emoji: '👧',
+    id: 'p6', name: 'Rina Tanaka', icon: User,
     strengths: ['Language'], weaknesses: ['Science', 'Math'],
     availableSlots: { Mon: ['morning', 'evening'], Tue: ['morning', 'evening'], Wed: ['morning', 'evening'], Thu: ['morning', 'evening'], Fri: ['morning'], Sat: ['morning', 'afternoon', 'evening'], Sun: ['afternoon', 'evening'] },
     goal: 'Score above average in science and math',
@@ -265,13 +273,13 @@ export default function StudyPlanDesigner({
       {/* Student Profile Card */}
       <div className="w-full rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
         <div className="flex items-center gap-3">
-          <span className="text-3xl">{profile.emoji}</span>
+          {(() => { const Icon = profile.icon; return <Icon className="h-7 w-7 text-amber-300" />; })()}
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <CalendarCheck className="h-4 w-4 text-amber-300" />
               <span className="text-sm font-bold text-amber-300">{profile.name}</span>
             </div>
-            <p className="mt-1 text-xs text-white/60">🎯 {profile.goal}</p>
+            <p className="mt-1 text-xs text-white/60"><Target className="h-3 w-3 inline mr-1" />{profile.goal}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {profile.strengths.map((s) => (
                 <span key={s} className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-300">✓ {s}</span>
@@ -304,7 +312,7 @@ export default function StudyPlanDesigner({
                     : 'border-white/10 bg-white/5 text-white/50 hover:border-white/20',
                 )}
               >
-                {SUBJECT_INFO[sub].emoji} {sub}
+                {(() => { const Icon = SUBJECT_INFO[sub].icon; return <Icon className="h-3 w-3 inline" />; })()} {sub}
               </button>
             ))}
           </div>
@@ -341,7 +349,7 @@ export default function StudyPlanDesigner({
                         )}
                       >
                         {assigned ? (
-                          <span className="text-[10px] font-bold">{SUBJECT_INFO[assigned].emoji} {assigned}</span>
+                          <span className="text-[10px] font-bold">{(() => { const Icon = SUBJECT_INFO[assigned].icon; return <Icon className="h-3 w-3 inline" />; })()} {assigned}</span>
                         ) : isAvailable ? (
                           <span className="text-[10px] text-white/20">+</span>
                         ) : (
@@ -394,7 +402,7 @@ export default function StudyPlanDesigner({
                 <p className="text-xs font-bold text-white/50">Weakness Improvement</p>
                 {Object.entries(simulationResult.weaknessImprovement).map(([sub, pct]) => (
                   <div key={sub} className="mt-1 flex items-center gap-2">
-                    <span className="w-20 text-xs text-white/60">{SUBJECT_INFO[sub as Subject].emoji} {sub}</span>
+                    <span className="w-20 text-xs text-white/60">{(() => { const Icon = SUBJECT_INFO[sub as Subject].icon; return <Icon className="h-3 w-3 inline mr-1" />; })()} {sub}</span>
                     <div className="h-3 flex-1 rounded-full bg-white/10">
                       <div
                         className={cn('h-3 rounded-full transition-all', pct >= 75 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-red-500')}
@@ -411,7 +419,7 @@ export default function StudyPlanDesigner({
                 <p className="text-xs font-bold text-white/50">Strength Maintenance</p>
                 {Object.entries(simulationResult.strengthMaintenance).map(([sub, pct]) => (
                   <div key={sub} className="mt-1 flex items-center gap-2">
-                    <span className="w-20 text-xs text-white/60">{SUBJECT_INFO[sub as Subject].emoji} {sub}</span>
+                    <span className="w-20 text-xs text-white/60">{(() => { const Icon = SUBJECT_INFO[sub as Subject].icon; return <Icon className="h-3 w-3 inline mr-1" />; })()} {sub}</span>
                     <div className="h-3 flex-1 rounded-full bg-white/10">
                       <div
                         className={cn('h-3 rounded-full bg-cyan-500 transition-all')}

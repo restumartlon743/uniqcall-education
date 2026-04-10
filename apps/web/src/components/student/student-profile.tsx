@@ -31,10 +31,13 @@ import {
 import { GlowCard } from '@/components/effects/glow-card'
 import { ArchetypeAvatar } from '@/components/effects/archetype-avatar'
 import {
-  MOCK_CURRENT_STUDENT,
-  MOCK_STUDENT_BADGES,
   ARCHETYPE_COLORS,
 } from '@/lib/mock-data'
+import {
+  useCurrentUser,
+  useStudentData,
+  useStudentBadges,
+} from '@/hooks/use-supabase-data'
 
 const BADGE_ICONS: Record<string, React.ReactNode> = {
   brain: <Brain className="h-5 w-5" />,
@@ -47,31 +50,6 @@ const BADGE_ICONS: Record<string, React.ReactNode> = {
   trophy: <Trophy className="h-5 w-5" />,
   zap: <Zap className="h-5 w-5" />,
 }
-
-const student = MOCK_CURRENT_STUDENT
-const badges = MOCK_STUDENT_BADGES
-const unlockedCount = badges.filter((b) => b.unlocked).length
-const xpPercent = Math.round((student.currentXp / student.nextLevelXp) * 100)
-
-const cognitiveData = [
-  { param: 'Analytical', value: student.cognitiveParams.analytical, icon: <Brain className="h-4 w-4" /> },
-  { param: 'Creative', value: student.cognitiveParams.creative, icon: <Sparkles className="h-4 w-4" /> },
-  { param: 'Linguistic', value: student.cognitiveParams.linguistic, icon: <BookOpen className="h-4 w-4" /> },
-  { param: 'Kinesthetic', value: student.cognitiveParams.kinesthetic, icon: <Target className="h-4 w-4" /> },
-  { param: 'Social', value: student.cognitiveParams.social, icon: <Users className="h-4 w-4" /> },
-  { param: 'Observation', value: student.cognitiveParams.observation, icon: <Eye className="h-4 w-4" /> },
-  { param: 'Intuition', value: student.cognitiveParams.intuition, icon: <Shield className="h-4 w-4" /> },
-]
-
-const radarData = cognitiveData.map(({ param, value }) => ({ param, value }))
-
-const varkData = [
-  { label: 'Visual', value: student.vark.visual, color: '#8B5CF6' },
-  { label: 'Auditory', value: student.vark.auditory, color: '#06B6D4' },
-  { label: 'Read/Write', value: student.vark.readWrite, color: '#F59E0B' },
-  { label: 'Kinesthetic', value: student.vark.kinesthetic, color: '#EC4899' },
-]
-const varkTotal = varkData.reduce((s, v) => s + v.value, 0)
 
 const careerRecs = [
   { title: 'Data Scientist', match: 92 },
@@ -91,6 +69,61 @@ const fadeUp = {
 }
 
 export function StudentProfile() {
+  const { user, loading: userLoading } = useCurrentUser()
+  const { student, loading: studentLoading } = useStudentData(user?.id ?? '')
+  const { badges: rawBadges, loading: badgesLoading } = useStudentBadges(user?.id ?? '')
+
+  const isLoading = userLoading || studentLoading || badgesLoading
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
+  if (!student || !user) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+        <Brain className="h-12 w-12 mb-4 opacity-50" />
+        <p className="text-lg font-medium">No profile data available</p>
+        <p className="text-sm mt-1">Complete your assessment to see your profile</p>
+      </div>
+    )
+  }
+
+  const nextLevelXp = student.level * 500
+  const xpPercent = nextLevelXp > 0 ? Math.round((student.xp / nextLevelXp) * 100) : 0
+
+  const badges = rawBadges.map((b) => ({
+    id: b.id,
+    name: b.name,
+    icon: b.icon_url || b.category || 'star',
+    unlocked: true,
+    category: b.category,
+  }))
+  const unlockedCount = badges.length
+
+  const cognitiveData = [
+    { param: 'Analytical', value: student.cognitiveParams.analytical, icon: <Brain className="h-4 w-4" /> },
+    { param: 'Creative', value: student.cognitiveParams.creative, icon: <Sparkles className="h-4 w-4" /> },
+    { param: 'Linguistic', value: student.cognitiveParams.linguistic, icon: <BookOpen className="h-4 w-4" /> },
+    { param: 'Kinesthetic', value: student.cognitiveParams.kinesthetic, icon: <Target className="h-4 w-4" /> },
+    { param: 'Social', value: student.cognitiveParams.social, icon: <Users className="h-4 w-4" /> },
+    { param: 'Observation', value: student.cognitiveParams.observation, icon: <Eye className="h-4 w-4" /> },
+    { param: 'Intuition', value: student.cognitiveParams.intuition, icon: <Shield className="h-4 w-4" /> },
+  ]
+  const radarData = cognitiveData.map(({ param, value }) => ({ param, value }))
+
+  const varkData = [
+    { label: 'Visual', value: student.varkProfile?.visual || 0, color: '#8B5CF6' },
+    { label: 'Auditory', value: student.varkProfile?.auditory || 0, color: '#06B6D4' },
+    { label: 'Read/Write', value: student.varkProfile?.readWrite ?? student.varkProfile?.read_write ?? 0, color: '#F59E0B' },
+    { label: 'Kinesthetic', value: student.varkProfile?.kinesthetic || 0, color: '#EC4899' },
+  ]
+  const varkTotal = varkData.reduce((s, v) => s + v.value, 0) || 1
+
   return (
     <motion.div
       variants={stagger}
@@ -106,25 +139,25 @@ export function StudentProfile() {
             <div className="relative mx-auto mb-4 flex items-center justify-center">
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-600/20 to-cyan-600/20 blur-2xl" />
               <div className="relative overflow-hidden rounded-2xl border-2 border-purple-500/30 bg-gradient-to-br from-[#1a1040]/50 to-[#0d1530]/50 p-2">
-                <ArchetypeAvatar archetypeCode={student.archetypeCode} gender="male" size="md" />
+                <ArchetypeAvatar archetypeCode={student.archetype.code} gender="male" size="md" />
               </div>
             </div>
 
             <h2 className="text-xl font-bold text-white">{student.name}</h2>
             <p className="mt-1 text-xs text-slate-400">
-              {student.school} &middot; {student.class}
+              {student.school} &middot; {student.className}
             </p>
 
             <div className="mt-3 flex justify-center">
               <span
                 className="rounded-full px-3 py-1 text-sm font-semibold"
                 style={{
-                  backgroundColor: `${ARCHETYPE_COLORS[student.archetypeCode]}20`,
-                  color: ARCHETYPE_COLORS[student.archetypeCode],
-                  border: `1px solid ${ARCHETYPE_COLORS[student.archetypeCode]}40`,
+                  backgroundColor: `${ARCHETYPE_COLORS[student.archetype.code]}20`,
+                  color: ARCHETYPE_COLORS[student.archetype.code],
+                  border: `1px solid ${ARCHETYPE_COLORS[student.archetype.code]}40`,
                 }}
               >
-                {student.archetype}
+                {student.archetype.name}
               </span>
             </div>
 
@@ -133,7 +166,7 @@ export function StudentProfile() {
               <div className="mb-1.5 flex items-center justify-between text-xs">
                 <span className="text-slate-400">Level {student.level}</span>
                 <span className="font-mono text-amber-400">
-                  {student.currentXp} / {student.nextLevelXp} XP
+                  {student.xp} / {nextLevelXp} XP
                 </span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-white/5">
@@ -215,7 +248,7 @@ export function StudentProfile() {
           <GlowCard glowColor="cyan" className="p-6">
             <h3 className="mb-1 text-lg font-bold text-white">VARK Learning Style</h3>
             <p className="mb-4 text-xs text-slate-400">
-              Dominant: <span className="font-semibold text-cyan-400">{student.dominantVark === 'R' ? 'Read/Write' : student.dominantVark}</span>
+              Dominant: <span className="font-semibold text-cyan-400">{student.vark === 'R' ? 'Read/Write' : student.vark === 'V' ? 'Visual' : student.vark === 'A' ? 'Auditory' : 'Kinesthetic'}</span>
             </p>
 
             <div className="space-y-4">
@@ -247,7 +280,7 @@ export function StudentProfile() {
           <GlowCard glowColor="gold" className="p-6">
             <h3 className="mb-1 text-lg font-bold text-white">Career Recommendations</h3>
             <p className="mb-4 text-xs text-slate-400">
-              Based on your {student.archetype} archetype and cognitive profile
+              Based on your {student.archetype.name} archetype and cognitive profile
             </p>
 
             <div className="space-y-3">

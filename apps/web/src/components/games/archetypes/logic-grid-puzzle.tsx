@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { Check, X, RotateCcw, Lightbulb, CheckCircle2 } from 'lucide-react'
+import { Check, X, RotateCcw, Lightbulb, CheckCircle2, PartyPopper } from 'lucide-react'
 import type { GameDifficulty } from '@/lib/game-data'
 
 // ─── Types ────────────────────────────────────────────────────
@@ -414,7 +414,7 @@ export default function LogicGridPuzzle({
               </p>
               <p className="mt-1 text-xs text-white/40">
                 {correctCount === totalCells
-                  ? 'Perfect! 🎉'
+                  ? <><PartyPopper className="mr-1 inline h-4 w-4 text-amber-400" /> Perfect!</>
                   : `${Math.round((correctCount / totalCells) * 100)}% accuracy`}
               </p>
             </motion.div>
@@ -430,7 +430,7 @@ export default function LogicGridPuzzle({
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-xs text-amber-300/80"
             >
-              💡 Start with the direct statements — mark those cells ✓ first,
+              <Lightbulb className="mr-1 inline h-3 w-3 text-amber-400" /> Start with the direct statements — mark those cells ✓ first,
               then eliminate the rest of that row and column with ✗.
             </motion.div>
           )}

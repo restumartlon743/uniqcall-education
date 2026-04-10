@@ -31,13 +31,16 @@ import {
 } from 'recharts'
 import { GlowCard } from '@/components/effects/glow-card'
 import { ArchetypeAvatar } from '@/components/effects/archetype-avatar'
+import { ARCHETYPE_COLORS } from '@/lib/mock-data'
 import {
-  MOCK_CURRENT_STUDENT,
-  MOCK_STUDENT_BADGES,
-  MOCK_DAILY_MISSIONS,
-  MOCK_QUEST_NODES,
-  ARCHETYPE_COLORS,
-} from '@/lib/mock-data'
+  useCurrentUser,
+  useStudentData,
+  useStudentBadges,
+  useStudentMissions,
+  useStudentQuests,
+  useLeaderboard,
+} from '@/hooks/use-supabase-data'
+
 import Link from 'next/link'
 
 const BADGE_ICONS: Record<string, React.ReactNode> = {
@@ -58,29 +61,6 @@ const MISSION_ICONS: Record<string, React.ReactNode> = {
   group: <UsersRound className="h-4 w-4" />,
 }
 
-const MOOD_ICONS: Record<string, React.ReactNode> = {
-  confident: <Sparkles className="h-4 w-4" />,
-}
-
-const student = MOCK_CURRENT_STUDENT
-const badges = MOCK_STUDENT_BADGES
-const missions = MOCK_DAILY_MISSIONS
-const questNodes = MOCK_QUEST_NODES
-
-const radarData = [
-  { param: 'Analytical', value: student.cognitiveParams.analytical },
-  { param: 'Creative', value: student.cognitiveParams.creative },
-  { param: 'Linguistic', value: student.cognitiveParams.linguistic },
-  { param: 'Kinesthetic', value: student.cognitiveParams.kinesthetic },
-  { param: 'Social', value: student.cognitiveParams.social },
-  { param: 'Observation', value: student.cognitiveParams.observation },
-  { param: 'Intuition', value: student.cognitiveParams.intuition },
-]
-
-const topSkills = [...radarData].sort((a, b) => b.value - a.value).slice(0, 3)
-const unlockedCount = badges.filter((b) => b.unlocked).length
-const xpPercent = Math.round((student.currentXp / student.nextLevelXp) * 100)
-
 const stagger = {
   hidden: {},
   show: { transition: { staggerChildren: 0.08 } },
@@ -91,6 +71,80 @@ const fadeUp = {
 }
 
 export function StudentDashboard() {
+  const { user, loading: userLoading } = useCurrentUser()
+  const { student, loading: studentLoading } = useStudentData(user?.id ?? '')
+  const { badges: rawBadges, loading: badgesLoading } = useStudentBadges(user?.id ?? '')
+  const { missions: rawMissions, loading: missionsLoading } = useStudentMissions(user?.id ?? '')
+  const { quests: rawQuests, loading: questsLoading } = useStudentQuests(user?.id ?? '')
+  const { leaderboard: topStudents } = useLeaderboard()
+
+  const isLoading = userLoading || studentLoading || badgesLoading || missionsLoading || questsLoading
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
+  if (!student || !user) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+        <Brain className="h-12 w-12 mb-4 opacity-50" />
+        <p className="text-lg font-medium">No student data available</p>
+        <p className="text-sm mt-1">Complete your assessment to see your dashboard</p>
+      </div>
+    )
+  }
+
+  const nextLevelXp = student.level * 500
+  const xpPercent = nextLevelXp > 0 ? Math.round((student.xp / nextLevelXp) * 100) : 0
+
+  const badges = rawBadges.map((b) => ({
+    id: b.id,
+    name: b.name,
+    icon: b.icon_url || b.category || 'star',
+    unlocked: true,
+    category: b.category,
+  }))
+  const unlockedCount = badges.length
+
+  const missions = rawMissions.map((m) => ({
+    id: m.id,
+    title: m.title || m.mission_title || 'Mission',
+    xp: m.xp_reward || 0,
+    completed: m.completed ?? m.status === 'completed',
+    type: m.type || m.mission_type || 'game',
+  }))
+
+  const questNodes = rawQuests
+    .sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
+    .map((q, i, arr) => {
+      const total = arr.length
+      return {
+        id: q.id,
+        title: q.title,
+        completed: q.status === 'completed' || !!q.completed_at,
+        xp: q.xp_reward || 0,
+        x: total > 1 ? 10 + (80 * i) / (total - 1) : 50,
+        y: i % 2 === 0 ? 60 : 35,
+        current: q.status === 'in_progress',
+        final: i === total - 1,
+      }
+    })
+
+  const radarData = [
+    { param: 'Analytical', value: student.cognitiveParams.analytical },
+    { param: 'Creative', value: student.cognitiveParams.creative },
+    { param: 'Linguistic', value: student.cognitiveParams.linguistic },
+    { param: 'Kinesthetic', value: student.cognitiveParams.kinesthetic },
+    { param: 'Social', value: student.cognitiveParams.social },
+    { param: 'Observation', value: student.cognitiveParams.observation },
+    { param: 'Intuition', value: student.cognitiveParams.intuition },
+  ]
+  const topSkills = [...radarData].sort((a, b) => b.value - a.value).slice(0, 3)
+
   return (
     <motion.div
       variants={stagger}
@@ -107,7 +161,7 @@ export function StudentDashboard() {
             <div className="relative mx-auto mb-5 flex items-center justify-center">
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-600/20 to-cyan-600/20 blur-2xl" />
               <div className="relative overflow-hidden rounded-2xl border-2 border-purple-500/30 bg-gradient-to-br from-[#1a1040]/50 to-[#0d1530]/50 p-2">
-                <ArchetypeAvatar archetypeCode={student.archetypeCode} gender="male" size="lg" />
+                <ArchetypeAvatar archetypeCode={student.archetype.code} gender="male" size="lg" />
                 {/* Level badge */}
                 <div className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full border border-purple-500/50 bg-[#151B3B] px-3 py-0.5 text-xs font-bold text-purple-300">
                   LVL {student.level}
@@ -124,17 +178,17 @@ export function StudentDashboard() {
               <span
                 className="rounded-full px-3 py-0.5 text-xs font-semibold"
                 style={{
-                  backgroundColor: `${ARCHETYPE_COLORS[student.archetypeCode]}20`,
-                  color: ARCHETYPE_COLORS[student.archetypeCode],
-                  border: `1px solid ${ARCHETYPE_COLORS[student.archetypeCode]}40`,
+                  backgroundColor: `${ARCHETYPE_COLORS[student.archetype.code]}20`,
+                  color: ARCHETYPE_COLORS[student.archetype.code],
+                  border: `1px solid ${ARCHETYPE_COLORS[student.archetype.code]}40`,
                 }}
               >
-                {student.archetype}
+                {student.archetype.name}
               </span>
             </div>
 
             <p className="mt-2 text-center text-xs text-slate-400">
-              {student.school} &middot; {student.class}
+              {student.school} &middot; {student.className}
             </p>
 
             {/* XP bar */}
@@ -142,7 +196,7 @@ export function StudentDashboard() {
               <div className="mb-1 flex items-center justify-between text-xs">
                 <span className="text-slate-400">XP Progress</span>
                 <span className="font-mono text-amber-400">
-                  {student.currentXp.toLocaleString()} / {student.nextLevelXp.toLocaleString()}
+                  {student.xp.toLocaleString()} / {nextLevelXp.toLocaleString()}
                 </span>
               </div>
               <div className="h-2.5 overflow-hidden rounded-full bg-white/5">
@@ -166,8 +220,8 @@ export function StudentDashboard() {
                 <span className="text-xs text-slate-400">day streak</span>
               </div>
               <div className="flex items-center gap-1.5 text-xs text-cyan-400">
-                {MOOD_ICONS[student.mood]}
-                <span className="capitalize">{student.mood}</span>
+                <Sparkles className="h-4 w-4" />
+                <span className="capitalize">Active</span>
               </div>
             </div>
           </GlowCard>
@@ -297,6 +351,65 @@ export function StudentDashboard() {
           </GlowCard>
         </motion.div>
       </div>
+
+      {/* ── Mini Leaderboard: Top 5 ── */}
+      <motion.div variants={fadeUp}>
+        <GlowCard glowColor="purple" className="p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-purple-400" />
+              <h3 className="text-lg font-bold text-white">Top 5 Students</h3>
+            </div>
+            <Link
+              href="/student/leaderboard"
+              className="flex items-center gap-1 text-xs font-medium text-purple-400 transition-colors hover:text-purple-300"
+            >
+              View full leaderboard
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          <div className="space-y-2">
+            {topStudents.slice(0, 5).map((entry) => {
+              const isMe = entry.studentId === user?.id
+              return (
+                <div
+                  key={entry.studentId}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${
+                    isMe
+                      ? 'border border-purple-500/20 bg-purple-500/5'
+                      : 'bg-white/[0.02] hover:bg-white/5'
+                  }`}
+                >
+                  <div
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
+                      entry.rank === 1
+                        ? 'bg-yellow-500/20 text-yellow-400'
+                        : entry.rank === 2
+                          ? 'bg-gray-400/20 text-gray-300'
+                          : entry.rank === 3
+                            ? 'bg-orange-700/20 text-orange-400'
+                            : 'bg-white/5 text-slate-400'
+                    }`}
+                  >
+                    {entry.rank}
+                  </div>
+                  <span className={`min-w-0 flex-1 truncate text-sm font-medium ${isMe ? 'text-purple-300' : 'text-slate-200'}`}>
+                    {entry.name}
+                  </span>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Star className="h-3 w-3 text-amber-400" />
+                    <span className="text-xs font-bold text-amber-400">{entry.totalXp.toLocaleString()}</span>
+                  </div>
+                </div>
+              )
+            })}
+            {topStudents.length === 0 && (
+              <p className="py-4 text-center text-xs text-slate-500">No leaderboard data yet</p>
+            )}
+          </div>
+        </GlowCard>
+      </motion.div>
 
       {/* ── Bottom row: Missions | Quest preview ── */}
       <div className="grid gap-6 lg:grid-cols-2">

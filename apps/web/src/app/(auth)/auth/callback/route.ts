@@ -9,31 +9,41 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = await createClient()
 
-    // Demo mode: redirect to home if Supabase is not configured
     if (!supabase) {
-      return NextResponse.redirect(`${origin}/`)
+      return NextResponse.redirect(`${origin}/login?error=config_missing`)
     }
 
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
-      // Check if user has a role assigned
       const {
         data: { user },
       } = await supabase.auth.getUser()
 
       if (user) {
+        // Ensure profile exists
         const { data: profile } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', user.id)
           .single()
 
-        if (profile?.role) {
+        if (!profile) {
+          // Create profile for new user
+          await supabase.from('profiles').insert({
+            id: user.id,
+            full_name: user.user_metadata?.full_name ?? null,
+            avatar_url: user.user_metadata?.avatar_url ?? null,
+          })
+          return NextResponse.redirect(`${origin}/onboarding`)
+        }
+
+        if (profile.role) {
           const rolePaths: Record<string, string> = {
             teacher: '/teacher',
             parent: '/parent',
             admin: '/admin',
+            student: '/student',
           }
           const redirectPath = rolePaths[profile.role] ?? next
           return NextResponse.redirect(`${origin}${redirectPath}`)

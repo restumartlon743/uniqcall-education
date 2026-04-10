@@ -5,13 +5,12 @@ import { Chrome } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { AnimatedBackground } from '@/components/effects/animated-background'
 import { CursorGlow } from '@/components/effects/cursor-glow'
+import { useLanguage } from '@/lib/i18n/context'
+import { LanguageToggle } from '@/components/ui/language-toggle'
 
 function handleGoogleSignIn() {
   const supabase = createClient()
-  if (!supabase) {
-    window.location.href = '/teacher'
-    return
-  }
+  if (!supabase) return
   supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -41,10 +40,17 @@ const fadeUp = {
 }
 
 export default function LoginPage() {
+  const { t } = useLanguage()
+
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0A0E27]">
       <AnimatedBackground variant="hero" />
       <CursorGlow />
+
+      {/* Language Toggle */}
+      <div className="absolute right-4 top-4 z-20">
+        <LanguageToggle />
+      </div>
 
       {/* Login Card */}
       <motion.div
@@ -72,20 +78,20 @@ export default function LoginPage() {
                   filter: 'drop-shadow(0 0 20px rgba(139,92,246,0.4)) drop-shadow(0 0 40px rgba(6,182,212,0.2))',
                 }}
               >
-                Uniqcall Education
+                {t('login.title')}
               </h1>
               <p className="mt-3 text-sm text-slate-400">
-                Empowering Every Unique Mind
+                {t('login.subtitle')}
               </p>
               <p className="mt-1 text-xs text-slate-500">
-                Sistem Navigasi Masa Depan Siswa
+                {t('login.tagline')}
               </p>
             </motion.div>
 
             {/* Divider */}
             <motion.div variants={fadeUp} className="flex items-center gap-4">
               <div className="h-px flex-1 bg-linear-to-r from-transparent via-white/20 to-transparent" />
-              <span className="text-xs tracking-widest text-slate-500">Sign In</span>
+              <span className="text-xs tracking-widest text-slate-500">{t('login.divider_text')}</span>
               <div className="h-px flex-1 bg-linear-to-r from-transparent via-white/20 to-transparent" />
             </motion.div>
 
@@ -96,13 +102,13 @@ export default function LoginPage() {
                 className="group flex w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-medium text-white transition-all hover:border-purple-500/50 hover:bg-white/10 hover:shadow-[0_0_25px_rgba(139,92,246,0.3)]"
               >
                 <Chrome className="h-5 w-5 text-cyan-400 transition-colors group-hover:text-cyan-300" />
-                Masuk dengan Google
+                {t('login.google_button')}
               </button>
             </motion.div>
 
             {/* Footer */}
             <motion.p variants={fadeUp} className="text-center text-xs text-slate-600">
-              Dengan masuk, Anda menyetujui kebijakan privasi kami
+              {t('login.terms')}
             </motion.p>
           </motion.div>
         </div>

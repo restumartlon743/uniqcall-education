@@ -82,14 +82,14 @@ const ALL_POLICIES: PolicyOption[] = [
 ]
 
 const ALL_EVENTS: CityEvent[] = [
-  { id: 'ev1', name: '🌊 Coastal Flooding', description: 'Rising sea levels flood eastern districts', effects: { environment: -15, economy: -10, happiness: -10 } },
-  { id: 'ev2', name: '🔬 Tech Breakthrough', description: 'Local lab discovers room-temp superconductor', effects: { technology: 20, economy: 10 } },
-  { id: 'ev3', name: '📈 Population Boom', description: 'Baby boom generation enters the workforce', effects: { population: 20, economy: 5, environment: -5 } },
-  { id: 'ev4', name: '🏭 Factory Fire', description: 'Major industrial complex catches fire', effects: { economy: -15, environment: -10 } },
-  { id: 'ev5', name: '🎉 Cultural Renaissance', description: 'A wave of artistic creativity sweeps the city', effects: { happiness: 15, economy: 5 } },
-  { id: 'ev6', name: '🌳 Reforestation Success', description: 'Planted trees from 10 years ago are thriving', effects: { environment: 15, happiness: 5 } },
-  { id: 'ev7', name: '📉 Economic Recession', description: 'Global downturn impacts local businesses', effects: { economy: -20, happiness: -10 } },
-  { id: 'ev8', name: '🤖 Robot Protest', description: 'Workers protest against automation taking jobs', effects: { happiness: -15, technology: -5 } },
+  { id: 'ev1', name: 'Coastal Flooding', description: 'Rising sea levels flood eastern districts', effects: { environment: -15, economy: -10, happiness: -10 } },
+  { id: 'ev2', name: 'Tech Breakthrough', description: 'Local lab discovers room-temp superconductor', effects: { technology: 20, economy: 10 } },
+  { id: 'ev3', name: 'Population Boom', description: 'Baby boom generation enters the workforce', effects: { population: 20, economy: 5, environment: -5 } },
+  { id: 'ev4', name: 'Factory Fire', description: 'Major industrial complex catches fire', effects: { economy: -15, environment: -10 } },
+  { id: 'ev5', name: 'Cultural Renaissance', description: 'A wave of artistic creativity sweeps the city', effects: { happiness: 15, economy: 5 } },
+  { id: 'ev6', name: 'Reforestation Success', description: 'Planted trees from 10 years ago are thriving', effects: { environment: 15, happiness: 5 } },
+  { id: 'ev7', name: 'Economic Recession', description: 'Global downturn impacts local businesses', effects: { economy: -20, happiness: -10 } },
+  { id: 'ev8', name: 'Robot Protest', description: 'Workers protest against automation taking jobs', effects: { happiness: -15, technology: -5 } },
 ]
 
 // ─── Config ───────────────────────────────────────────────────

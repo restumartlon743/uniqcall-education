@@ -3,12 +3,11 @@
 import { CheckCircle2, Lock, Crosshair, Star, Sparkles } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { GlowCard } from '@/components/effects/glow-card'
-import { MOCK_QUEST_NODES, MOCK_CURRENT_STUDENT } from '@/lib/mock-data'
-
-const nodes = MOCK_QUEST_NODES
-const student = MOCK_CURRENT_STUDENT
-const completedCount = nodes.filter((n) => n.completed).length
-const totalXpEarned = nodes.filter((n) => n.completed).reduce((s, n) => s + n.xp, 0)
+import {
+  useCurrentUser,
+  useStudentData,
+  useStudentQuests,
+} from '@/hooks/use-supabase-data'
 
 function buildSvgPath(pts: { x: number; y: number }[]): string {
   if (pts.length < 2) return ''
@@ -28,6 +27,49 @@ const fadeUp = {
 }
 
 export function QuestMap() {
+  const { user, loading: userLoading } = useCurrentUser()
+  const { student, loading: studentLoading } = useStudentData(user?.id ?? '')
+  const { quests: rawQuests, loading: questsLoading } = useStudentQuests(user?.id ?? '')
+
+  const isLoading = userLoading || studentLoading || questsLoading
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
+  if (!student || !user) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+        <Crosshair className="h-12 w-12 mb-4 opacity-50" />
+        <p className="text-lg font-medium">No quest data available</p>
+        <p className="text-sm mt-1">Start your journey to see your quest map</p>
+      </div>
+    )
+  }
+
+  const nodes = rawQuests
+    .sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
+    .map((q, i, arr) => {
+      const total = arr.length
+      return {
+        id: q.id,
+        title: q.title,
+        completed: q.status === 'completed' || !!q.completed_at,
+        xp: q.xp_reward || 0,
+        x: total > 1 ? 10 + (80 * i) / (total - 1) : 50,
+        y: i % 2 === 0 ? 60 : 35,
+        current: q.status === 'in_progress',
+        final: i === total - 1,
+      }
+    })
+
+  const completedCount = nodes.filter((n) => n.completed).length
+  const totalXpEarned = nodes.filter((n) => n.completed).reduce((s, n) => s + n.xp, 0)
+
   const completedPath = buildSvgPath(
     nodes.filter((n) => n.completed).map((n) => ({ x: n.x, y: n.y }))
   )

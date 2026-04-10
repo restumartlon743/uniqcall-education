@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { cn } from '@/lib/utils'
-import { MOCK_PARENT_MESSAGES } from '@/lib/mock-data'
-import type { MockParentMessage } from '@/lib/mock-data'
+import {
+  useCurrentUser,
+  useParentMessages,
+} from '@/hooks/use-supabase-data'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -16,12 +18,94 @@ import {
   Search,
 } from 'lucide-react'
 
+interface Conversation {
+  id: string
+  teacherName: string
+  subject: string
+  lastMessage: string
+  timestamp: string
+  unread: boolean
+  thread: Array<{
+    id: string
+    sender: 'parent' | 'teacher'
+    senderName: string
+    content: string
+    timestamp: string
+  }>
+}
+
 export function ParentMessages() {
-  const [selectedConvo, setSelectedConvo] = useState<MockParentMessage | null>(null)
+  const { user, profile, loading } = useCurrentUser()
+  const { messages: rawMessages, loading: messagesLoading } = useParentMessages(user?.id ?? '')
+  const [selectedConvo, setSelectedConvo] = useState<Conversation | null>(null)
   const [newMessage, setNewMessage] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
 
-  const filteredMessages = MOCK_PARENT_MESSAGES.filter(
+  const conversations = useMemo<Conversation[]>(() => {
+    if (!rawMessages.length || !user) return []
+    const convMap = new Map<string, Conversation>()
+
+    for (const msg of rawMessages) {
+      const isFromParent = msg.sender_id === user.id
+      const teacherId = isFromParent ? msg.receiver_id : msg.sender_id
+      const teacherName = isFromParent
+        ? msg.receiver?.full_name || 'Teacher'
+        : msg.sender?.full_name || 'Teacher'
+
+      if (!convMap.has(teacherId)) {
+        convMap.set(teacherId, {
+          id: teacherId,
+          teacherName,
+          subject: msg.subject || 'Conversation',
+          lastMessage: msg.content || msg.body || '',
+          timestamp: msg.created_at
+            ? new Date(msg.created_at).toLocaleDateString()
+            : '',
+          unread: false,
+          thread: [],
+        })
+      }
+
+      convMap.get(teacherId)!.thread.push({
+        id: msg.id,
+        sender: isFromParent ? 'parent' : 'teacher',
+        senderName: isFromParent
+          ? profile?.full_name || 'Parent'
+          : teacherName,
+        content: msg.content || msg.body || '',
+        timestamp: msg.created_at
+          ? new Date(msg.created_at).toLocaleString()
+          : '',
+      })
+    }
+
+    for (const conv of convMap.values()) {
+      conv.thread.sort(
+        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      )
+      const last = conv.thread[conv.thread.length - 1]
+      if (last) {
+        conv.lastMessage = last.content
+        conv.timestamp = last.timestamp
+      }
+    }
+
+    return Array.from(convMap.values()).sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    )
+  }, [rawMessages, user, profile?.full_name])
+
+  const isLoading = loading || messagesLoading
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
+  const filteredMessages = conversations.filter(
     (m) =>
       m.teacherName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.subject.toLowerCase().includes(searchQuery.toLowerCase())

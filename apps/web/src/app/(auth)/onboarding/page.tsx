@@ -4,15 +4,18 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { GraduationCap, Heart, Loader2 } from 'lucide-react'
+import { GraduationCap, Heart, BookOpen, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AnimatedBackground } from '@/components/effects/animated-background'
 import { GlowCard } from '@/components/effects/glow-card'
+import { useLanguage } from '@/lib/i18n/context'
+import { LanguageToggle } from '@/components/ui/language-toggle'
 
-type RoleOption = 'teacher' | 'parent'
+type RoleOption = 'teacher' | 'parent' | 'student'
 
 export default function OnboardingPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [selectedRole, setSelectedRole] = useState<RoleOption | null>(null)
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
@@ -25,9 +28,9 @@ export default function OnboardingPage() {
 
     const supabase = createClient()
 
-    // Demo mode: redirect directly
     if (!supabase) {
-      router.push(selectedRole === 'teacher' ? '/teacher' : '/parent')
+      setError(t('onboarding.error_invalid_session'))
+      setLoading(false)
       return
     }
 
@@ -36,7 +39,7 @@ export default function OnboardingPage() {
     } = await supabase.auth.getUser()
 
     if (!user) {
-      setError('Sesi tidak valid. Silakan login kembali.')
+      setError(t('onboarding.error_invalid_session'))
       setLoading(false)
       return
     }
@@ -50,7 +53,7 @@ export default function OnboardingPage() {
         .single()
 
       if (!school) {
-        setError('Kode sekolah tidak ditemukan.')
+        setError(t('onboarding.error_school_not_found'))
         setLoading(false)
         return
       }
@@ -62,7 +65,7 @@ export default function OnboardingPage() {
         .eq('id', user.id)
 
       if (profileError) {
-        setError('Gagal menyimpan profil.')
+        setError(t('onboarding.error_save_profile'))
         setLoading(false)
         return
       }
@@ -76,12 +79,68 @@ export default function OnboardingPage() {
         })
 
       if (teacherError) {
-        setError('Gagal membuat profil guru.')
+        setError(t('onboarding.error_create_teacher'))
         setLoading(false)
         return
       }
 
       router.push('/teacher')
+    } else if (selectedRole === 'student') {
+      // Validate class code
+      const { data: classData } = await supabase
+        .from('classes')
+        .select('id, school_id')
+        .eq('class_code', code.trim())
+        .single()
+
+      if (!classData) {
+        setError(t('onboarding.error_class_not_found'))
+        setLoading(false)
+        return
+      }
+
+      // Update profile with role
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ role: 'student' })
+        .eq('id', user.id)
+
+      if (profileError) {
+        setError(t('onboarding.error_save_profile'))
+        setLoading(false)
+        return
+      }
+
+      // Create student record
+      const { error: studentError } = await supabase
+        .from('students')
+        .insert({
+          id: user.id,
+          school_id: classData.school_id,
+          class_id: classData.id,
+        })
+
+      if (studentError) {
+        setError(t('onboarding.error_create_student'))
+        setLoading(false)
+        return
+      }
+
+      // Join class via class_members
+      const { error: memberError } = await supabase
+        .from('class_members')
+        .insert({
+          class_id: classData.id,
+          student_id: user.id,
+        })
+
+      if (memberError) {
+        setError(t('onboarding.error_create_student'))
+        setLoading(false)
+        return
+      }
+
+      router.push('/student')
     } else {
       // Parent role — validate invite code
       const { data: invite } = await supabase
@@ -92,7 +151,7 @@ export default function OnboardingPage() {
         .single()
 
       if (!invite) {
-        setError('Kode undangan tidak valid atau sudah digunakan.')
+        setError(t('onboarding.error_invalid_invite'))
         setLoading(false)
         return
       }
@@ -104,7 +163,7 @@ export default function OnboardingPage() {
         .eq('id', user.id)
 
       if (profileError) {
-        setError('Gagal menyimpan profil.')
+        setError(t('onboarding.error_save_profile'))
         setLoading(false)
         return
       }
@@ -118,7 +177,7 @@ export default function OnboardingPage() {
         })
 
       if (parentError) {
-        setError('Gagal membuat profil orang tua.')
+        setError(t('onboarding.error_create_parent'))
         setLoading(false)
         return
       }
@@ -133,9 +192,59 @@ export default function OnboardingPage() {
     }
   }
 
+  function getCodeLabel(): string {
+    if (selectedRole === 'teacher') return t('onboarding.school_code')
+    if (selectedRole === 'student') return t('onboarding.class_code')
+    return t('onboarding.invite_code')
+  }
+
+  function getCodePlaceholder(): string {
+    if (selectedRole === 'teacher') return t('onboarding.school_code_placeholder')
+    if (selectedRole === 'student') return t('onboarding.class_code_placeholder')
+    return t('onboarding.invite_code_placeholder')
+  }
+
+  const roleCards: { role: RoleOption; icon: typeof GraduationCap; glowColor: 'purple' | 'cyan' | 'gold'; labelKey: string }[] = [
+    { role: 'teacher', icon: GraduationCap, glowColor: 'purple', labelKey: 'onboarding.role_teacher' },
+    { role: 'student', icon: BookOpen, glowColor: 'cyan', labelKey: 'onboarding.role_student' },
+    { role: 'parent', icon: Heart, glowColor: 'gold', labelKey: 'onboarding.role_parent' },
+  ]
+
+  const glowColorMap = {
+    purple: {
+      border: 'border-purple-500/50',
+      bg: 'bg-purple-500/10',
+      shadow: 'shadow-[0_0_25px_rgba(139,92,246,0.3)]',
+      iconActive: 'text-purple-400',
+      iconHover: 'group-hover:text-purple-300',
+      textActive: 'text-purple-300',
+    },
+    cyan: {
+      border: 'border-cyan-500/50',
+      bg: 'bg-cyan-500/10',
+      shadow: 'shadow-[0_0_25px_rgba(6,182,212,0.3)]',
+      iconActive: 'text-cyan-400',
+      iconHover: 'group-hover:text-cyan-300',
+      textActive: 'text-cyan-300',
+    },
+    gold: {
+      border: 'border-amber-500/50',
+      bg: 'bg-amber-500/10',
+      shadow: 'shadow-[0_0_25px_rgba(245,158,11,0.3)]',
+      iconActive: 'text-amber-400',
+      iconHover: 'group-hover:text-amber-300',
+      textActive: 'text-amber-300',
+    },
+  }
+
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0A0E27]">
       <AnimatedBackground variant="hero" />
+
+      {/* Language Toggle */}
+      <div className="absolute right-4 top-4 z-20">
+        <LanguageToggle />
+      </div>
 
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -152,13 +261,10 @@ export default function OnboardingPage() {
               className="text-center"
             >
               <h1 className="bg-linear-to-r from-purple-400 to-cyan-400 bg-clip-text font-heading text-3xl font-bold text-transparent">
-                Selamat Datang!
+                {t('onboarding.welcome')}
               </h1>
               <p className="mt-2 text-sm text-slate-400">
-                Pilih peran Anda untuk memulai
-              </p>
-              <p className="mt-1 text-xs text-slate-500">
-                Siswa menggunakan aplikasi mobile
+                {t('onboarding.select_role')}
               </p>
             </motion.div>
 
@@ -167,85 +273,49 @@ export default function OnboardingPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35, duration: 0.5 }}
-              className="grid grid-cols-2 gap-4"
+              className="grid grid-cols-3 gap-3"
             >
-              <button
-                onClick={() => {
-                  setSelectedRole('teacher')
-                  setCode('')
-                  setError(null)
-                }}
-                className="group relative"
-              >
-                <GlowCard
-                  glowColor="purple"
-                  hoverEffect
-                  className={cn(
-                    'flex flex-col items-center gap-3 p-6 transition-all',
-                    selectedRole === 'teacher'
-                      ? 'border-purple-500/50 bg-purple-500/10 shadow-[0_0_25px_rgba(139,92,246,0.3)]'
-                      : ''
-                  )}
-                >
-                  <GraduationCap
-                    className={cn(
-                      'h-8 w-8 transition-colors',
-                      selectedRole === 'teacher'
-                        ? 'text-purple-400'
-                        : 'text-slate-400 group-hover:text-purple-300'
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      'text-sm font-medium',
-                      selectedRole === 'teacher'
-                        ? 'text-purple-300'
-                        : 'text-slate-300'
-                    )}
+              {roleCards.map(({ role, icon: Icon, glowColor, labelKey }) => {
+                const colors = glowColorMap[glowColor]
+                const isSelected = selectedRole === role
+                return (
+                  <button
+                    key={role}
+                    onClick={() => {
+                      setSelectedRole(role)
+                      setCode('')
+                      setError(null)
+                    }}
+                    className="group relative"
                   >
-                    Saya Guru
-                  </span>
-                </GlowCard>
-              </button>
-
-              <button
-                onClick={() => {
-                  setSelectedRole('parent')
-                  setCode('')
-                  setError(null)
-                }}
-                className="group relative"
-              >
-                <GlowCard
-                  glowColor="cyan"
-                  hoverEffect
-                  className={cn(
-                    'flex flex-col items-center gap-3 p-6 transition-all',
-                    selectedRole === 'parent'
-                      ? 'border-cyan-500/50 bg-cyan-500/10 shadow-[0_0_25px_rgba(6,182,212,0.3)]'
-                      : ''
-                  )}
-                >
-                  <Heart
-                    className={cn(
-                      'h-8 w-8 transition-colors',
-                      selectedRole === 'parent'
-                        ? 'text-cyan-400'
-                        : 'text-slate-400 group-hover:text-cyan-300'
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      'text-sm font-medium',
-                      selectedRole === 'parent'
-                        ? 'text-cyan-300'
-                        : 'text-slate-300'
-                    )}
-                  >
-                    Saya Orang Tua
-                  </span>
-                </GlowCard>
-              </button>
+                    <GlowCard
+                      glowColor={glowColor === 'gold' ? 'purple' : glowColor}
+                      hoverEffect
+                      className={cn(
+                        'flex flex-col items-center gap-3 p-5 transition-all',
+                        isSelected && `${colors.border} ${colors.bg} ${colors.shadow}`
+                      )}
+                    >
+                      <Icon
+                        className={cn(
+                          'h-7 w-7 transition-colors',
+                          isSelected
+                            ? colors.iconActive
+                            : `text-slate-400 ${colors.iconHover}`
+                        )}
+                      />
+                      <span
+                        className={cn(
+                          'text-xs font-medium',
+                          isSelected ? colors.textActive : 'text-slate-300'
+                        )}
+                      >
+                        {t(labelKey)}
+                      </span>
+                    </GlowCard>
+                  </button>
+                )
+              })}
             </motion.div>
 
             {/* Code Input */}
@@ -260,19 +330,13 @@ export default function OnboardingPage() {
                   className="space-y-3 overflow-hidden"
                 >
                   <label className="block text-sm text-slate-400">
-                    {selectedRole === 'teacher'
-                      ? 'Masukkan Kode Sekolah'
-                      : 'Masukkan Kode Undangan'}
+                    {getCodeLabel()}
                   </label>
                   <input
                     type="text"
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
-                    placeholder={
-                      selectedRole === 'teacher'
-                        ? 'Contoh: SKL-XXXXX'
-                        : 'Contoh: INV-XXXXX'
-                    }
+                    placeholder={getCodePlaceholder()}
                     className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-purple-500/50 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
                   />
                 </motion.div>
@@ -308,7 +372,7 @@ export default function OnboardingPage() {
                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-linear-to-r from-purple-600 to-cyan-600 px-6 py-3.5 text-sm font-medium text-white transition-all hover:from-purple-500 hover:to-cyan-500 hover:shadow-[0_0_20px_rgba(139,92,246,0.3)] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                    {loading ? 'Menyimpan...' : 'Lanjutkan'}
+                    {loading ? t('onboarding.processing') : t('onboarding.continue')}
                   </button>
                 </motion.div>
               )}

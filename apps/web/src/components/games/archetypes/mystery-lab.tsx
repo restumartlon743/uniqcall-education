@@ -12,7 +12,9 @@ import {
   BarChart3,
   Lightbulb,
   FileQuestion,
+  Eye,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import type { GameDifficulty } from '@/lib/game-data'
 
 // ─── Types ────────────────────────────────────────────────────
@@ -50,10 +52,10 @@ interface MysteryLabProps {
 
 // ─── Data ─────────────────────────────────────────────────────
 
-const EVIDENCE_ICONS: Record<EvidenceType, { emoji: string; color: string }> = {
-  fingerprint: { emoji: '🔍', color: 'text-purple-400' },
-  substance: { emoji: '🧪', color: 'text-emerald-400' },
-  data: { emoji: '📊', color: 'text-cyan-400' },
+const EVIDENCE_ICONS: Record<EvidenceType, { icon: LucideIcon; color: string }> = {
+  fingerprint: { icon: Search, color: 'text-purple-400' },
+  substance: { icon: FlaskConical, color: 'text-emerald-400' },
+  data: { icon: BarChart3, color: 'text-cyan-400' },
 }
 
 const ALL_MYSTERIES: Mystery[] = [
@@ -498,7 +500,7 @@ export default function MysteryLab({
                   {currentMystery.evidenceList.map((ev) => (
                     <div key={ev.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
                       <div className="flex items-center gap-2">
-                        <span className={EVIDENCE_ICONS[ev.type].color}>{EVIDENCE_ICONS[ev.type].emoji}</span>
+                        {(() => { const Icon = EVIDENCE_ICONS[ev.type].icon; return <Icon className={cn('h-4 w-4', EVIDENCE_ICONS[ev.type].color)} /> })()}
                         <span className="text-xs font-bold text-white/80">{ev.name}</span>
                       </div>
                       <p className="mt-1 text-[10px] text-white/40">{ev.description}</p>
@@ -574,7 +576,7 @@ export default function MysteryLab({
                           )}
                         >
                           <div className="flex items-center gap-2">
-                            <span className={EVIDENCE_ICONS[ev.type].color}>{EVIDENCE_ICONS[ev.type].emoji}</span>
+                            {(() => { const Icon = EVIDENCE_ICONS[ev.type].icon; return <Icon className={cn('h-4 w-4', EVIDENCE_ICONS[ev.type].color)} /> })()}
                             <span className="text-xs font-bold text-white/80">{ev.name}</span>
                             {tested && <CheckCircle2 className="ml-auto h-3 w-3 text-emerald-400" />}
                             {config.showRelevance && ev.isRelevant && <span className="ml-auto text-[9px] text-amber-400">Key evidence</span>}
@@ -687,12 +689,4 @@ export default function MysteryLab({
   )
 }
 
-// Missing icon alias
-function Eye(props: React.SVGProps<SVGSVGElement> & { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  )
-}
+

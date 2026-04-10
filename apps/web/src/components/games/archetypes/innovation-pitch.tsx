@@ -15,6 +15,8 @@ import {
   DollarSign,
   Sparkles,
   ChevronRight,
+  FlaskConical,
+  CircleCheck,
 } from 'lucide-react'
 import type { GameDifficulty } from '@/lib/game-data'
 
@@ -605,8 +607,8 @@ export default function InnovationPitch({
                   {/* Mini appeal hints — only on easy */}
                   {difficulty === 'easy' && (
                     <div className="mt-2 flex gap-3 text-[10px] text-gray-500">
-                      <span>🧪 Innovation: {'●'.repeat(option.investorAppeal.innovation)}{'○'.repeat(5 - option.investorAppeal.innovation)}</span>
-                      <span>✅ Feasibility: {'●'.repeat(option.investorAppeal.feasibility)}{'○'.repeat(5 - option.investorAppeal.feasibility)}</span>
+                      <span><FlaskConical className="mr-1 inline h-3 w-3" /> Innovation: {'●'.repeat(option.investorAppeal.innovation)}{'○'.repeat(5 - option.investorAppeal.innovation)}</span>
+                      <span><CircleCheck className="mr-1 inline h-3 w-3" /> Feasibility: {'●'.repeat(option.investorAppeal.feasibility)}{'○'.repeat(5 - option.investorAppeal.feasibility)}</span>
                     </div>
                   )}
                 </motion.button>

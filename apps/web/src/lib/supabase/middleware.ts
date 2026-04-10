@@ -2,7 +2,6 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
-  // Demo mode: skip auth if Supabase is not configured
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return NextResponse.next()
   }
@@ -73,11 +72,12 @@ export async function updateSession(request: NextRequest) {
       teacher: '/teacher',
       parent: '/parent',
       admin: '/admin',
+      student: '/student',
     }
 
     const expectedPrefix = rolePaths[profile.role]
     if (expectedPrefix) {
-      const dashboardPrefixes = ['/teacher', '/parent', '/admin']
+      const dashboardPrefixes = ['/teacher', '/parent', '/admin', '/student']
       const isOnDashboard = dashboardPrefixes.some((p) =>
         pathname.startsWith(p)
       )
@@ -103,6 +103,7 @@ export async function updateSession(request: NextRequest) {
         teacher: '/teacher',
         parent: '/parent',
         admin: '/admin',
+        student: '/student',
       }
       const url = request.nextUrl.clone()
       url.pathname = rolePaths[profile.role] ?? '/onboarding'

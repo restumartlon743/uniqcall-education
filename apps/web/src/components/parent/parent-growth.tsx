@@ -1,10 +1,13 @@
 'use client'
 
 import {
-  MOCK_PARENT_CHILD,
-  MOCK_GROWTH_DATA,
   ARCHETYPE_COLORS,
 } from '@/lib/mock-data'
+import {
+  useCurrentUser,
+  useParentChildren,
+  useStudentBadges,
+} from '@/hooks/use-supabase-data'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -21,12 +24,6 @@ import {
   Moon,
 } from 'lucide-react'
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
   ResponsiveContainer,
   RadarChart,
   Radar,
@@ -35,10 +32,11 @@ import {
   PolarRadiusAxis,
   BarChart,
   Bar,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
 } from 'recharts'
-
-const child = MOCK_PARENT_CHILD
-const growthData = MOCK_GROWTH_DATA
 
 const badgeIcons: Record<string, React.ElementType> = {
   search: Search,
@@ -72,6 +70,35 @@ const parameterColors: Record<string, string> = {
 }
 
 export function ParentGrowth() {
+  const { user, loading: userLoading } = useCurrentUser()
+  const { children, loading: childrenLoading } = useParentChildren(user?.id ?? '')
+  const child = children?.[0] ?? null
+  const { badges: rawBadges, loading: badgesLoading } = useStudentBadges(child?.id ?? '')
+
+  const isLoading = userLoading || childrenLoading || badgesLoading
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
+  if (!child) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+        <Users className="h-12 w-12 mb-4 opacity-50" />
+        <p className="text-lg font-medium">No linked children found</p>
+        <p className="text-sm mt-1">Link your child from the Settings page</p>
+      </div>
+    )
+  }
+
+  const xpToNextLevel = child.level * 500
+  const xpPercent = xpToNextLevel > 0 ? Math.round((child.xp / xpToNextLevel) * 100) : 0
+  const archetypeColor = ARCHETYPE_COLORS[child.archetype.code] ?? '#8B5CF6'
+
   const radarData = Object.entries(child.cognitiveParams).map(([key, value]) => ({
     subject: cognitiveLabels[key] ?? key,
     value,
@@ -79,16 +106,20 @@ export function ParentGrowth() {
   }))
 
   const varkData = [
-    { name: 'Visual', value: child.varkProfile.visual, fill: '#8B5CF6' },
-    { name: 'Auditory', value: child.varkProfile.auditory, fill: '#06B6D4' },
-    { name: 'Read/Write', value: child.varkProfile.readWrite, fill: '#F59E0B' },
-    { name: 'Kinesthetic', value: child.varkProfile.kinesthetic, fill: '#EC4899' },
+    { name: 'Visual', value: child.varkProfile?.visual || 0, fill: '#8B5CF6' },
+    { name: 'Auditory', value: child.varkProfile?.auditory || 0, fill: '#06B6D4' },
+    { name: 'Read/Write', value: child.varkProfile?.readWrite ?? child.varkProfile?.read_write ?? 0, fill: '#F59E0B' },
+    { name: 'Kinesthetic', value: child.varkProfile?.kinesthetic || 0, fill: '#EC4899' },
   ]
 
-  const xpPercent = Math.round((child.xp / child.xpToNextLevel) * 100)
-  const archetypeColor = ARCHETYPE_COLORS[child.archetype.code] ?? '#8B5CF6'
-  const earnedBadges = child.badges.filter((b) => b.earnedAt)
-  const lockedBadges = child.badges.filter((b) => !b.earnedAt)
+  const earnedBadges = rawBadges.map((b) => ({
+    id: b.id,
+    name: b.name,
+    icon: b.icon_url || b.category || 'star',
+    earnedAt: b.earned_at,
+    description: b.description,
+  }))
+  const lockedBadges: typeof earnedBadges = []
 
   return (
     <div className="space-y-6">
@@ -159,14 +190,14 @@ export function ParentGrowth() {
                 <div className="text-right">
                   <p className="text-sm text-muted-foreground">XP Progress</p>
                   <p className="mt-1 text-lg font-bold text-amber-400">
-                    {child.xp.toLocaleString()} / {child.xpToNextLevel.toLocaleString()}
+                    {child.xp.toLocaleString()} / {xpToNextLevel.toLocaleString()}
                   </p>
                 </div>
               </div>
               <div className="mt-4">
                 <Progress value={xpPercent} indicatorClassName="from-amber-500 to-yellow-400" />
                 <p className="mt-1 text-right text-xs text-muted-foreground">
-                  {child.xpToNextLevel - child.xp} XP to Level {child.level + 1}
+                  {xpToNextLevel - child.xp} XP to Level {child.level + 1}
                 </p>
               </div>
             </CardContent>
@@ -237,24 +268,10 @@ export function ParentGrowth() {
                   <span className="text-2xl font-bold text-white">
                     {child.cognitiveParams[param as keyof typeof child.cognitiveParams]}
                   </span>
-                  <span className="text-xs text-emerald-400">
-                    +{growthData[growthData.length - 1][param as keyof typeof growthData[0]] as number -
-                      (growthData[0][param as keyof typeof growthData[0]] as number)}
-                    pts
-                  </span>
                 </div>
-                <ResponsiveContainer width="100%" height={80}>
-                  <LineChart data={growthData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
-                    <Line
-                      type="monotone"
-                      dataKey={param}
-                      stroke={parameterColors[param]}
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                    <YAxis domain={[0, 100]} hide />
-                  </LineChart>
-                </ResponsiveContainer>
+                <div className="flex items-center justify-center py-4 text-xs text-slate-500">
+                  Trend data coming soon
+                </div>
               </CardContent>
             </Card>
           ))}

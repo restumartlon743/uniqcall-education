@@ -2,11 +2,14 @@
 
 import { cn } from '@/lib/utils'
 import {
-  MOCK_STUDENTS,
   WEEKLY_PROGRESS,
   ARCHETYPE_COLORS,
-  getArchetypeDistribution,
 } from '@/lib/mock-data'
+import {
+  useCurrentUser,
+  useTeacherStudents,
+  getDistributionFromStudents,
+} from '@/hooks/use-supabase-data'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -35,14 +38,6 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts'
-
-const topStudents = [...MOCK_STUDENTS]
-  .sort((a, b) => b.progress - a.progress)
-  .slice(0, 5)
-
-const atRiskStudents = MOCK_STUDENTS.filter(
-  (s) => s.status === 'needs_attention'
-)
 
 function LineTooltip({
   active,
@@ -83,7 +78,32 @@ function PieTooltip({
 }
 
 export function TeacherReports() {
-  const distribution = getArchetypeDistribution()
+  const { user, loading: userLoading } = useCurrentUser()
+  const { students, loading: studentsLoading } = useTeacherStudents(user?.id ?? '')
+  const loading = userLoading || studentsLoading
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
+  const distribution = getDistributionFromStudents(students)
+  const topStudents = [...students]
+    .sort((a, b) => b.progress - a.progress)
+    .slice(0, 5)
+  const atRiskStudents = students.filter((s) => s.status === 'needs_attention')
+
+  if (students.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+        <TrendingUp className="h-12 w-12 mb-4 opacity-50" />
+        <p>No student data available for reports</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

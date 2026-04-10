@@ -3,7 +3,7 @@
 import { Sidebar, type NavItem } from '@/components/layout/sidebar'
 import { TopBar } from '@/components/layout/top-bar'
 import { usePathname } from 'next/navigation'
-import { type ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import {
   BarChart3,
   Clipboard,
@@ -18,125 +18,54 @@ import {
   BookOpen,
   Map,
   User,
+  Trophy,
 } from 'lucide-react'
+import { useLanguage } from '@/lib/i18n/context'
 
-const teacherNav: NavItem[] = [
-  {
-    label: 'Overview',
-    href: '/teacher',
-    icon: <LayoutDashboard className="h-5 w-5" />,
-  },
-  {
-    label: 'Students',
-    href: '/teacher/students',
-    icon: <Users className="h-5 w-5" />,
-  },
-  {
-    label: 'Groups',
-    href: '/teacher/groups',
-    icon: <Users2 className="h-5 w-5" />,
-  },
-  {
-    label: 'Tasks',
-    href: '/teacher/tasks',
-    icon: <Clipboard className="h-5 w-5" />,
-  },
-  {
-    label: 'Reports',
-    href: '/teacher/reports',
-    icon: <BarChart3 className="h-5 w-5" />,
-  },
-  {
-    label: 'Settings',
-    href: '/teacher/settings',
-    icon: <Settings className="h-5 w-5" />,
-  },
+interface NavItemDef {
+  labelKey: string
+  href: string
+  icon: ReactNode
+}
+
+const teacherNavDefs: NavItemDef[] = [
+  { labelKey: 'dashboard.overview', href: '/teacher', icon: <LayoutDashboard className="h-5 w-5" /> },
+  { labelKey: 'dashboard.students', href: '/teacher/students', icon: <Users className="h-5 w-5" /> },
+  { labelKey: 'dashboard.groups', href: '/teacher/groups', icon: <Users2 className="h-5 w-5" /> },
+  { labelKey: 'dashboard.tasks', href: '/teacher/tasks', icon: <Clipboard className="h-5 w-5" /> },
+  { labelKey: 'dashboard.reports', href: '/teacher/reports', icon: <BarChart3 className="h-5 w-5" /> },
+  { labelKey: 'dashboard.settings', href: '/teacher/settings', icon: <Settings className="h-5 w-5" /> },
 ]
 
-const parentNav: NavItem[] = [
-  {
-    label: 'Overview',
-    href: '/parent',
-    icon: <Home className="h-5 w-5" />,
-  },
-  {
-    label: 'Growth',
-    href: '/parent/growth',
-    icon: <TrendingUp className="h-5 w-5" />,
-  },
-  {
-    label: 'Messages',
-    href: '/parent/messages',
-    icon: <MessageCircle className="h-5 w-5" />,
-  },
-  {
-    label: 'Settings',
-    href: '/parent/settings',
-    icon: <Settings className="h-5 w-5" />,
-  },
+const parentNavDefs: NavItemDef[] = [
+  { labelKey: 'dashboard.overview', href: '/parent', icon: <Home className="h-5 w-5" /> },
+  { labelKey: 'parent.growth', href: '/parent/growth', icon: <TrendingUp className="h-5 w-5" /> },
+  { labelKey: 'dashboard.messages', href: '/parent/messages', icon: <MessageCircle className="h-5 w-5" /> },
+  { labelKey: 'dashboard.settings', href: '/parent/settings', icon: <Settings className="h-5 w-5" /> },
 ]
 
-const adminNav: NavItem[] = [
-  {
-    label: 'Overview',
-    href: '/admin',
-    icon: <LayoutDashboard className="h-5 w-5" />,
-  },
-  {
-    label: 'Schools',
-    href: '/admin/schools',
-    icon: <Building2 className="h-5 w-5" />,
-  },
-  {
-    label: 'Classes',
-    href: '/admin/classes',
-    icon: <BookOpen className="h-5 w-5" />,
-  },
-  {
-    label: 'Users',
-    href: '/admin/users',
-    icon: <Users className="h-5 w-5" />,
-  },
-  {
-    label: 'Settings',
-    href: '/admin/settings',
-    icon: <Settings className="h-5 w-5" />,
-  },
+const adminNavDefs: NavItemDef[] = [
+  { labelKey: 'dashboard.overview', href: '/admin', icon: <LayoutDashboard className="h-5 w-5" /> },
+  { labelKey: 'admin.schools', href: '/admin/schools', icon: <Building2 className="h-5 w-5" /> },
+  { labelKey: 'admin.classes', href: '/admin/classes', icon: <BookOpen className="h-5 w-5" /> },
+  { labelKey: 'admin.users', href: '/admin/users', icon: <Users className="h-5 w-5" /> },
+  { labelKey: 'dashboard.settings', href: '/admin/settings', icon: <Settings className="h-5 w-5" /> },
 ]
 
-const studentNav: NavItem[] = [
-  {
-    label: 'Overview',
-    href: '/student',
-    icon: <LayoutDashboard className="h-5 w-5" />,
-  },
-  {
-    label: 'Quests',
-    href: '/student/quests',
-    icon: <Map className="h-5 w-5" />,
-  },
-  {
-    label: 'Learn',
-    href: '/student/learn',
-    icon: <BookOpen className="h-5 w-5" />,
-  },
-  {
-    label: 'Groups',
-    href: '/student/groups',
-    icon: <Users className="h-5 w-5" />,
-  },
-  {
-    label: 'Profile',
-    href: '/student/profile',
-    icon: <User className="h-5 w-5" />,
-  },
+const studentNavDefs: NavItemDef[] = [
+  { labelKey: 'dashboard.overview', href: '/student', icon: <LayoutDashboard className="h-5 w-5" /> },
+  { labelKey: 'student.leaderboard', href: '/student/leaderboard', icon: <Trophy className="h-5 w-5" /> },
+  { labelKey: 'student.quests', href: '/student/quests', icon: <Map className="h-5 w-5" /> },
+  { labelKey: 'student.learn', href: '/student/learn', icon: <BookOpen className="h-5 w-5" /> },
+  { labelKey: 'student.groups', href: '/student/groups', icon: <Users className="h-5 w-5" /> },
+  { labelKey: 'student.profile', href: '/student/profile', icon: <User className="h-5 w-5" /> },
 ]
 
-const navMap: Record<string, NavItem[]> = {
-  teacher: teacherNav,
-  parent: parentNav,
-  admin: adminNav,
-  student: studentNav,
+const navDefsMap: Record<string, NavItemDef[]> = {
+  teacher: teacherNavDefs,
+  parent: parentNavDefs,
+  admin: adminNavDefs,
+  student: studentNavDefs,
 }
 
 const basePathMap: Record<string, string> = {
@@ -144,13 +73,6 @@ const basePathMap: Record<string, string> = {
   parent: '/parent',
   admin: '/admin',
   student: '/student',
-}
-
-function getPageTitle(pathname: string): string {
-  const segments = pathname.split('/').filter(Boolean)
-  if (segments.length <= 1) return 'Overview'
-  const last = segments[segments.length - 1]
-  return last.charAt(0).toUpperCase() + last.slice(1)
 }
 
 interface DashboardShellProps {
@@ -169,7 +91,8 @@ export function DashboardShell({
   children,
 }: DashboardShellProps) {
   const pathname = usePathname()
-  // Auto-detect role from pathname (enables demo mode across all dashboards)
+  const { t } = useLanguage()
+
   const effectiveRole = pathname.startsWith('/student')
     ? 'student'
     : pathname.startsWith('/parent')
@@ -177,8 +100,22 @@ export function DashboardShell({
       : pathname.startsWith('/admin')
         ? 'admin'
         : role
-  const navItems = navMap[effectiveRole] ?? teacherNav
+
+  const navDefs = navDefsMap[effectiveRole] ?? teacherNavDefs
+  const navItems: NavItem[] = useMemo(
+    () => navDefs.map((def) => ({ label: t(def.labelKey), href: def.href, icon: def.icon })),
+    [navDefs, t],
+  )
   const basePath = basePathMap[effectiveRole] ?? '/teacher'
+
+  function getPageTitle(path: string): string {
+    const segments = path.split('/').filter(Boolean)
+    if (segments.length <= 1) return t('dashboard.overview')
+    const last = segments[segments.length - 1]
+    const key = `dashboard.${last}`
+    const translated = t(key)
+    return translated !== key ? translated : last.charAt(0).toUpperCase() + last.slice(1)
+  }
 
   return (
     <div className="flex h-screen bg-[#0A0E27]">

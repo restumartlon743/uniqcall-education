@@ -161,22 +161,22 @@ function scoreStory(
   const wordRatio = Math.min(words / config.minWords, 1)
   const wordScore = Math.round(wordRatio * 30)
   if (words >= config.minWords) {
-    details.push(`✅ Word count: ${words}/${config.minWords}`)
+    details.push(`[OK] Word count: ${words}/${config.minWords}`)
   } else {
-    details.push(`⚠️ Word count: ${words}/${config.minWords}`)
+    details.push(`[!] Word count: ${words}/${config.minWords}`)
   }
 
   // Vocabulary usage (max 40)
   const usedVocab = seed.vocabTargets.filter((v) => lower.includes(v.toLowerCase()))
   const vocabRatio = Math.min(usedVocab.length / config.vocabTarget, 1)
   const vocabScore = Math.round(vocabRatio * 40)
-  details.push(`📝 Vocabulary used: ${usedVocab.length}/${config.vocabTarget} (${usedVocab.join(', ') || 'none'})`)
+  details.push(`[Vocab] Vocabulary used: ${usedVocab.length}/${config.vocabTarget} (${usedVocab.join(', ') || 'none'})`)
 
   // Structure score (max 30): character names, punctuation variety, paragraph feel
   let structureScore = 0
   const usedChars = seed.characters.filter((c) => lower.includes(c.toLowerCase()))
   structureScore += usedChars.length > 0 ? 10 : 0
-  if (usedChars.length > 0) details.push(`👤 Characters referenced: ${usedChars.join(', ')}`)
+  if (usedChars.length > 0) details.push(`[Chars] Characters referenced: ${usedChars.join(', ')}`)
 
   const hasPunctuation = /[.!?]/.test(text)
   const hasCommas = /,/.test(text)
@@ -184,7 +184,7 @@ function scoreStory(
   if (hasPunctuation) structureScore += 8
   if (hasCommas) structureScore += 6
   if (hasQuotes) structureScore += 6
-  if (hasPunctuation || hasCommas) details.push('✅ Good punctuation variety')
+  if (hasPunctuation || hasCommas) details.push('[OK] Good punctuation variety')
 
   const total = Math.round((wordScore + vocabScore + structureScore) * config.multiplier)
   return { wordScore, vocabScore, structureScore, total, details }

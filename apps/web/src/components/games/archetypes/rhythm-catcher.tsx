@@ -9,6 +9,7 @@ import {
   Zap,
   Flame,
   Target,
+  ThumbsUp,
 } from 'lucide-react'
 import type { GameDifficulty } from '@/lib/game-data'
 
@@ -244,9 +245,9 @@ export default function RhythmCatcher({
             </p>
           </div>
           <div className="flex gap-4 text-xs text-white/50">
-            <span>🎵 {config.bpm} BPM</span>
-            <span>🎯 {config.beatCount} beats</span>
-            <span>⚡ {config.lanes} lanes</span>
+            <span><Music className="mr-1 inline h-3 w-3" /> {config.bpm} BPM</span>
+            <span><Target className="mr-1 inline h-3 w-3" /> {config.beatCount} beats</span>
+            <span><Zap className="mr-1 inline h-3 w-3" /> {config.lanes} lanes</span>
           </div>
           <button
             onClick={startGame}
@@ -277,8 +278,8 @@ export default function RhythmCatcher({
               </span>
             </div>
             <div className="flex gap-2 text-[10px]">
-              <span className="text-amber-400">⭐ {perfectCount}</span>
-              <span className="text-cyan-400">👍 {goodCount}</span>
+              <span className="text-amber-400"><Star className="mr-0.5 inline h-3 w-3" /> {perfectCount}</span>
+              <span className="text-cyan-400"><ThumbsUp className="mr-0.5 inline h-3 w-3" /> {goodCount}</span>
               <span className="text-red-400">✕ {missCount}</span>
             </div>
           </div>
@@ -420,11 +421,11 @@ export default function RhythmCatcher({
           <div className="grid w-full max-w-xs grid-cols-2 gap-2 text-center text-xs">
             <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
               <p className="text-white/40">Perfect</p>
-              <p className="text-lg font-bold text-amber-400">⭐ {perfectCount}</p>
+              <p className="text-lg font-bold text-amber-400"><Star className="mr-1 inline h-5 w-5" /> {perfectCount}</p>
             </div>
             <div className="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-3">
               <p className="text-white/40">Good</p>
-              <p className="text-lg font-bold text-cyan-300">👍 {goodCount}</p>
+              <p className="text-lg font-bold text-cyan-300"><ThumbsUp className="mr-1 inline h-5 w-5" /> {goodCount}</p>
             </div>
             <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-3">
               <p className="text-white/40">Miss</p>
@@ -432,7 +433,7 @@ export default function RhythmCatcher({
             </div>
             <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 p-3">
               <p className="text-white/40">Max Combo</p>
-              <p className="text-lg font-bold text-violet-300">🔥 {maxCombo}</p>
+              <p className="text-lg font-bold text-violet-300"><Flame className="mr-1 inline h-5 w-5" /> {maxCombo}</p>
             </div>
           </div>
         </motion.div>

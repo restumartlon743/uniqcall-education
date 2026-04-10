@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { ADMIN_STATS } from '@/lib/mock-data'
+import { useAdminStats } from '@/hooks/use-supabase-data'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Building2,
@@ -15,33 +15,6 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 import Link from 'next/link'
-
-const statsCards = [
-  {
-    label: 'Total Schools',
-    value: ADMIN_STATS.totalSchools,
-    icon: Building2,
-    color: 'purple' as const,
-  },
-  {
-    label: 'Total Teachers',
-    value: ADMIN_STATS.totalTeachers,
-    icon: GraduationCap,
-    color: 'cyan' as const,
-  },
-  {
-    label: 'Total Students',
-    value: ADMIN_STATS.totalStudents,
-    icon: Users,
-    color: 'purple' as const,
-  },
-  {
-    label: 'Total Parents',
-    value: ADMIN_STATS.totalParents,
-    icon: UserCheck,
-    color: 'cyan' as const,
-  },
-]
 
 const quickActions = [
   {
@@ -65,6 +38,23 @@ const quickActions = [
 ]
 
 export function AdminOverview() {
+  const { stats, loading } = useAdminStats()
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
+  const statsCards = [
+    { label: 'Total Schools', value: stats.totalSchools, icon: Building2, color: 'purple' as const },
+    { label: 'Total Teachers', value: stats.totalTeachers, icon: GraduationCap, color: 'cyan' as const },
+    { label: 'Total Students', value: stats.totalStudents, icon: Users, color: 'purple' as const },
+    { label: 'Total Parents', value: stats.totalParents, icon: UserCheck, color: 'cyan' as const },
+  ]
+
   return (
     <div className="space-y-6">
       {/* Stats Cards */}

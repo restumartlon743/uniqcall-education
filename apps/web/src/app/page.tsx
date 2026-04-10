@@ -6,6 +6,8 @@ import { Brain, BookOpen, Compass } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { GlowCard } from '@/components/effects/glow-card'
 import { ArchetypeAvatar } from '@/components/effects/archetype-avatar'
+import { useLanguage } from '@/lib/i18n/context'
+import { LanguageToggle } from '@/components/ui/language-toggle'
 
 const AnimatedBackground = dynamic(
   () => import('@/components/effects/animated-background').then((m) => m.AnimatedBackground),
@@ -29,31 +31,38 @@ const scaleIn = {
   visible: { opacity: 1, scale: 1, transition: { duration: 0.8, ease: 'easeOut' } },
 }
 
-const FEATURES = [
+const FEATURE_KEYS = [
   {
-    title: 'Cognitive Assessment',
-    desc: '7 parameter kognitif',
+    titleKey: 'landing.feature_cognitive_title',
+    descKey: 'landing.feature_cognitive_desc',
     icon: Brain,
     glow: 'purple' as const,
   },
   {
-    title: 'VARK Profiling',
-    desc: 'Gaya belajar personal',
+    titleKey: 'landing.feature_vark_title',
+    descKey: 'landing.feature_vark_desc',
     icon: BookOpen,
     glow: 'cyan' as const,
   },
   {
-    title: 'Knowledge Navigator',
-    desc: '12 arketipe unik',
+    titleKey: 'landing.feature_navigator_title',
+    descKey: 'landing.feature_navigator_desc',
     icon: Compass,
     glow: 'gold' as const,
   },
 ]
 
 export default function Home() {
+  const { t } = useLanguage()
+
   return (
     <div className="relative flex min-h-screen flex-col items-center overflow-hidden bg-[#0A0E27]">
       <AnimatedBackground variant="hero" />
+
+      {/* Language Toggle */}
+      <div className="fixed right-6 top-6 z-50">
+        <LanguageToggle />
+      </div>
 
       {/* Hero Section */}
       <motion.div
@@ -71,7 +80,7 @@ export default function Home() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-400" />
           </span>
-          Sistem Navigasi Masa Depan Siswa
+          {t('landing.badge_text')}
         </motion.div>
 
         {/* Title */}
@@ -104,13 +113,13 @@ export default function Home() {
           variants={fadeUp}
           className="mt-6 text-xl font-light tracking-wide text-slate-300 sm:text-2xl"
         >
-          Empowering Every Unique Mind.
+          {t('landing.hero_subtitle')}
         </motion.p>
         <motion.p
           variants={fadeUp}
           className="mt-3 max-w-md text-sm leading-relaxed text-slate-500"
         >
-          Platform edukasi personal berbasis AI untuk memahami potensi unik setiap siswa melalui asesmen kognitif dan profiling gaya belajar.
+          {t('landing.hero_description')}
         </motion.p>
 
         {/* Avatar Platform Stage */}
@@ -185,7 +194,7 @@ export default function Home() {
               >
                 {/* Pulse ring */}
                 <span className="absolute inset-0 animate-pulse rounded-xl bg-linear-to-r from-purple-500/20 to-cyan-500/20" />
-                <span className="relative z-10">Enter Your Dashboard</span>
+                <span className="relative z-10">{t('landing.cta_button')}</span>
                 <svg
                   className="relative z-10 h-4 w-4 transition-transform group-hover:translate-x-1"
                   fill="none"
@@ -209,8 +218,8 @@ export default function Home() {
           variants={containerVariants}
           className="mt-24 grid w-full max-w-3xl grid-cols-1 gap-5 sm:grid-cols-3"
         >
-          {FEATURES.map((feature) => (
-            <motion.div key={feature.title} variants={fadeUp}>
+          {FEATURE_KEYS.map((feature) => (
+            <motion.div key={feature.titleKey} variants={fadeUp}>
               <GlowCard glowColor={feature.glow} hoverEffect className="p-6">
                 <feature.icon
                   className={`mb-3 h-8 w-8 ${
@@ -230,10 +239,10 @@ export default function Home() {
                   }}
                 />
                 <h3 className="font-heading text-sm font-semibold text-white">
-                  {feature.title}
+                  {t(feature.titleKey)}
                 </h3>
                 <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                  {feature.desc}
+                  {t(feature.descKey)}
                 </p>
               </GlowCard>
             </motion.div>
@@ -244,7 +253,7 @@ export default function Home() {
       {/* Footer */}
       <div className="relative z-10 w-full pb-8 pt-4 text-center">
         <p className="text-xs tracking-widest text-slate-600">
-          Powered by Uniqcall Education
+          {t('common.powered_by')}
         </p>
       </div>
     </div>

@@ -10,6 +10,10 @@ import {
   Star,
   MessageCircle,
   BookOpen,
+  Lightbulb,
+  Wrench,
+  Zap,
+  UserRound,
 } from 'lucide-react'
 import type { GameDifficulty } from '@/lib/game-data'
 
@@ -456,7 +460,7 @@ export default function TeachBackChallenge({
           </p>
           {allScores.map((s, i) => (
             <div key={i} className="flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-2">
-              <span className="text-xs text-white/60">📚 {concepts[i]?.title}</span>
+              <span className="text-xs text-white/60"><BookOpen className="mr-1 inline h-3 w-3" /> {concepts[i]?.title}</span>
               <div className="flex gap-3 text-xs">
                 <span className="text-cyan-300">{s.correct}/{s.total} correct</span>
                 <span className="font-bold text-amber-400">{s.score} pts</span>
@@ -495,7 +499,7 @@ export default function TeachBackChallenge({
 
                 <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4">
                   <p className="text-xs text-cyan-300">
-                    🧑‍🎓 A virtual student is about to ask you {currentConcept.questions.length} questions about this concept.
+                    <UserRound className="mr-1 inline h-4 w-4 text-cyan-300" /> A virtual student is about to ask you {currentConcept.questions.length} questions about this concept.
                     Choose the best explanation for each!
                   </p>
                 </div>
@@ -521,7 +525,7 @@ export default function TeachBackChallenge({
                     currentQuestion.level === 'application' && 'bg-amber-500/20 text-amber-300',
                     currentQuestion.level === 'edge-case' && 'bg-red-500/20 text-red-300',
                   )}>
-                    {currentQuestion.level === 'basic' ? '💡 Basic Understanding' : currentQuestion.level === 'application' ? '🔧 Application' : '⚡ Edge Case'}
+                    {currentQuestion.level === 'basic' ? <><Lightbulb className="mr-1 inline h-3 w-3" /> Basic Understanding</> : currentQuestion.level === 'application' ? <><Wrench className="mr-1 inline h-3 w-3" /> Application</> : <><Zap className="mr-1 inline h-3 w-3" /> Edge Case</>}
                   </span>
                   <span className="text-[10px] text-white/30">Q{questionIndex + 1}/{currentConcept.questions.length}</span>
                 </div>
@@ -529,7 +533,7 @@ export default function TeachBackChallenge({
                 {/* Student question */}
                 <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4">
                   <div className="flex items-start gap-3">
-                    <span className="text-2xl">🧑‍🎓</span>
+                    <span className="text-2xl"><UserRound className="h-6 w-6 text-cyan-300" /></span>
                     <p className="text-sm text-white/80">{currentQuestion.question}</p>
                   </div>
                 </div>

@@ -10,7 +10,14 @@ import {
   Star,
   Compass,
   Gem,
+  Mountain,
+  TreePine,
+  Waves,
+  Home,
+  Flag,
+  MapPin,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import type { GameDifficulty } from '@/lib/game-data'
 
 // ─── Types ────────────────────────────────────────────────────
@@ -53,14 +60,14 @@ function placeOnGrid(grid: CellType[][], r: number, c: number, type: CellType): 
 
 // ─── Data ─────────────────────────────────────────────────────
 
-const CELL_RENDER: Record<CellType, { emoji: string; bg: string }> = {
-  empty: { emoji: '', bg: 'bg-[#0d1330]' },
-  mountain: { emoji: '⛰️', bg: 'bg-stone-900/60' },
-  forest: { emoji: '🌲', bg: 'bg-emerald-950/40' },
-  water: { emoji: '🌊', bg: 'bg-blue-950/40' },
-  village: { emoji: '🏘️', bg: 'bg-amber-950/40' },
-  start: { emoji: '🚩', bg: 'bg-cyan-900/30' },
-  treasure: { emoji: '', bg: 'bg-[#0d1330]' },
+const CELL_RENDER: Record<CellType, { icon: LucideIcon | null; bg: string }> = {
+  empty: { icon: null, bg: 'bg-[#0d1330]' },
+  mountain: { icon: Mountain, bg: 'bg-stone-900/60' },
+  forest: { icon: TreePine, bg: 'bg-emerald-950/40' },
+  water: { icon: Waves, bg: 'bg-blue-950/40' },
+  village: { icon: Home, bg: 'bg-amber-950/40' },
+  start: { icon: Flag, bg: 'bg-cyan-900/30' },
+  treasure: { icon: null, bg: 'bg-[#0d1330]' },
 }
 
 function buildHunt(
@@ -391,7 +398,7 @@ export default function GeoTracker({
               <div className="mt-3 flex flex-wrap gap-2">
                 {currentHunt.landmarks.map((lm) => (
                   <span key={lm.name} className="rounded-md bg-white/5 px-2 py-0.5 text-[10px] text-white/50">
-                    {CELL_RENDER[lm.type].emoji} {lm.name} ({lm.pos[0]},{lm.pos[1]})
+                    {(() => { const Icon = CELL_RENDER[lm.type].icon; return Icon ? <Icon className="h-3 w-3 inline" /> : null; })()} {lm.name} ({lm.pos[0]},{lm.pos[1]})
                   </span>
                 ))}
               </div>
@@ -430,7 +437,7 @@ export default function GeoTracker({
                               isAdj && !foundTreasure && phase === 'navigate' && 'hover:bg-white/10 cursor-pointer',
                             )}
                           >
-                            {isPlayer ? '📍' : isTreasureRevealed ? '💎' : CELL_RENDER[cell].emoji || (isOnPath ? '·' : '')}
+                            {isPlayer ? <MapPin className="h-4 w-4 text-cyan-300" /> : isTreasureRevealed ? <Gem className="h-4 w-4 text-amber-400" /> : (() => { const Icon = CELL_RENDER[cell].icon; return Icon ? <Icon className="h-4 w-4 text-white/40" /> : (isOnPath ? '·' : ''); })()}
                           </button>
                         )
                       })}

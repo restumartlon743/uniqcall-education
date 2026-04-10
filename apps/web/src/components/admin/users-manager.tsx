@@ -2,13 +2,10 @@
 
 import { useState } from 'react'
 import {
-  MOCK_TEACHERS,
-  MOCK_ADMIN_STUDENTS,
-  MOCK_PARENTS,
-  type MockTeacher,
-  type MockAdminStudent,
-  type MockParent,
-} from '@/lib/mock-data'
+  useAdminTeachers,
+  useAdminStudents,
+  useAdminParents,
+} from '@/hooks/use-supabase-data'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -41,32 +38,25 @@ import {
   UserCheck,
 } from 'lucide-react'
 
-function getAssessmentBadge(status: MockAdminStudent['assessmentStatus']) {
+function getAssessmentBadge(status: string) {
   switch (status) {
     case 'completed':
       return <Badge className="border-emerald-500/30 bg-emerald-500/15 text-emerald-300">Completed</Badge>
     case 'in_progress':
       return <Badge className="border-amber-500/30 bg-amber-500/15 text-amber-300">In Progress</Badge>
     case 'not_started':
+    default:
       return <Badge className="border-slate-500/30 bg-slate-500/15 text-slate-300">Not Started</Badge>
   }
 }
 
-function getOnboardingBadge(status: MockAdminStudent['onboardingStatus']) {
+function getOnboardingBadge(status: string) {
   switch (status) {
     case 'completed':
       return <Badge className="border-emerald-500/30 bg-emerald-500/15 text-emerald-300">Completed</Badge>
     case 'pending':
+    default:
       return <Badge className="border-amber-500/30 bg-amber-500/15 text-amber-300">Pending</Badge>
-  }
-}
-
-function getStatusBadge(status: MockTeacher['status']) {
-  switch (status) {
-    case 'active':
-      return <Badge className="border-emerald-500/30 bg-emerald-500/15 text-emerald-300">Active</Badge>
-    case 'inactive':
-      return <Badge className="border-slate-500/30 bg-slate-500/15 text-slate-300">Inactive</Badge>
   }
 }
 
@@ -80,31 +70,30 @@ export function UsersManager() {
   const [teacherEmail, setTeacherEmail] = useState('')
   const [teacherSchool, setTeacherSchool] = useState('')
 
-  // Teachers
-  const [teachers] = useState<MockTeacher[]>(MOCK_TEACHERS)
+  // Supabase data
+  const { teachers, loading: teachersLoading } = useAdminTeachers()
+  const { students, loading: studentsLoading } = useAdminStudents()
+  const { parents, loading: parentsLoading } = useAdminParents()
+
   const filteredTeachers = teachers.filter(
     (t) =>
-      t.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.email.toLowerCase().includes(search.toLowerCase()) ||
-      t.schoolName.toLowerCase().includes(search.toLowerCase())
+      (t.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (t.specialization || '').toLowerCase().includes(search.toLowerCase()) ||
+      (t.employee_id || '').toLowerCase().includes(search.toLowerCase())
   )
 
-  // Students
-  const [students] = useState<MockAdminStudent[]>(MOCK_ADMIN_STUDENTS)
   const filteredStudents = students.filter(
     (s) =>
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.schoolName.toLowerCase().includes(search.toLowerCase()) ||
-      s.className.toLowerCase().includes(search.toLowerCase())
+      (s.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.schoolName || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.className || '').toLowerCase().includes(search.toLowerCase())
   )
 
-  // Parents
-  const [parents] = useState<MockParent[]>(MOCK_PARENTS)
   const filteredParents = parents.filter(
     (p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.email.toLowerCase().includes(search.toLowerCase()) ||
-      p.linkedChildren.some((c) =>
+      (p.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (p.phone || '').toLowerCase().includes(search.toLowerCase()) ||
+      (p.linkedChildren || []).some((c: string) =>
         c.toLowerCase().includes(search.toLowerCase())
       )
   )
@@ -161,6 +150,11 @@ export function UsersManager() {
 
         {/* Teachers Tab */}
         <TabsContent value="teachers">
+          {teachersLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+            </div>
+          ) : (
           <Card className="glass">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -173,44 +167,26 @@ export function UsersManager() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>School</TableHead>
-                    <TableHead>Classes Assigned</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>Specialization</TableHead>
+                    <TableHead>Employee ID</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredTeachers.map((t) => (
                     <TableRow key={t.id}>
                       <TableCell className="font-medium">{t.name}</TableCell>
-                      <TableCell className="text-sm text-slate-400">
-                        {t.email}
-                      </TableCell>
                       <TableCell className="text-sm text-slate-300">
-                        {t.schoolName}
+                        {t.specialization || <span className="text-xs text-slate-500">N/A</span>}
                       </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {t.classesAssigned.length > 0 ? (
-                            t.classesAssigned.map((c) => (
-                              <Badge key={c} variant="logical">
-                                {c}
-                              </Badge>
-                            ))
-                          ) : (
-                            <span className="text-xs text-slate-500">
-                              None assigned
-                            </span>
-                          )}
-                        </div>
+                      <TableCell className="text-sm text-slate-400">
+                        {t.employee_id || <span className="text-xs text-slate-500">N/A</span>}
                       </TableCell>
-                      <TableCell>{getStatusBadge(t.status)}</TableCell>
                     </TableRow>
                   ))}
                   {filteredTeachers.length === 0 && (
                     <TableRow>
                       <TableCell
-                        colSpan={5}
+                        colSpan={3}
                         className="text-center text-slate-400"
                       >
                         No teachers found.
@@ -221,10 +197,16 @@ export function UsersManager() {
               </Table>
             </CardContent>
           </Card>
+          )}
         </TabsContent>
 
         {/* Students Tab */}
         <TabsContent value="students">
+          {studentsLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+            </div>
+          ) : (
           <Card className="glass">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -258,7 +240,7 @@ export function UsersManager() {
                         {s.archetype ? (
                           <Badge
                             variant={
-                              s.archetype.toLowerCase() as
+                              (s.archetype as string).toLowerCase() as
                                 | 'thinker'
                                 | 'creator'
                                 | 'engineer'
@@ -295,10 +277,16 @@ export function UsersManager() {
               </Table>
             </CardContent>
           </Card>
+          )}
         </TabsContent>
 
         {/* Parents Tab */}
         <TabsContent value="parents">
+          {parentsLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+            </div>
+          ) : (
           <Card className="glass">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -311,7 +299,7 @@ export function UsersManager() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
+                    <TableHead>Phone</TableHead>
                     <TableHead>Linked Children</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -320,15 +308,21 @@ export function UsersManager() {
                     <TableRow key={p.id}>
                       <TableCell className="font-medium">{p.name}</TableCell>
                       <TableCell className="text-sm text-slate-400">
-                        {p.email}
+                        {p.phone || <span className="text-xs text-slate-500">N/A</span>}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {p.linkedChildren.map((child) => (
-                            <Badge key={child} variant="social">
-                              {child}
-                            </Badge>
-                          ))}
+                          {(p.linkedChildren || []).length > 0 ? (
+                            p.linkedChildren.map((child: string) => (
+                              <Badge key={child} variant="social">
+                                {child}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-xs text-slate-500">
+                              No children linked
+                            </span>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -347,6 +341,7 @@ export function UsersManager() {
               </Table>
             </CardContent>
           </Card>
+          )}
         </TabsContent>
       </Tabs>
 

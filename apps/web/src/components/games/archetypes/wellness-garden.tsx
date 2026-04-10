@@ -11,7 +11,12 @@ import {
   Sun,
   Leaf,
   AlertCircle,
+  TreeDeciduous,
+  Sprout,
+  Flower,
+  Skull,
 } from 'lucide-react'
+import type { ReactNode } from 'react'
 import type { GameDifficulty } from '@/lib/game-data'
 
 // ─── Types ────────────────────────────────────────────────────
@@ -56,9 +61,9 @@ const ALL_EVENTS: DayEvent[] = [
 ]
 
 const RESOURCE_CONFIG = [
-  { key: 'water' as const, label: 'Water (Rest)', icon: Droplets, color: 'text-blue-400', bg: 'bg-blue-500', barBg: 'bg-blue-500/20', plantEmoji: '🌊' },
-  { key: 'sunlight' as const, label: 'Sunlight (Activity)', icon: Sun, color: 'text-amber-400', bg: 'bg-amber-500', barBg: 'bg-amber-500/20', plantEmoji: '☀️' },
-  { key: 'nutrients' as const, label: 'Nutrients (Social)', icon: Leaf, color: 'text-emerald-400', bg: 'bg-emerald-500', barBg: 'bg-emerald-500/20', plantEmoji: '🌿' },
+  { key: 'water' as const, label: 'Water (Rest)', icon: Droplets, color: 'text-blue-400', bg: 'bg-blue-500', barBg: 'bg-blue-500/20' },
+  { key: 'sunlight' as const, label: 'Sunlight (Activity)', icon: Sun, color: 'text-amber-400', bg: 'bg-amber-500', barBg: 'bg-amber-500/20' },
+  { key: 'nutrients' as const, label: 'Nutrients (Social)', icon: Leaf, color: 'text-emerald-400', bg: 'bg-emerald-500', barBg: 'bg-emerald-500/20' },
 ]
 
 // ─── Config ───────────────────────────────────────────────────
@@ -84,12 +89,12 @@ function shuffle<T>(arr: T[]): T[] {
   return a
 }
 
-function getPlantStage(health: number): string {
-  if (health >= 80) return '🌳'
-  if (health >= 60) return '🌿'
-  if (health >= 40) return '🌱'
-  if (health >= 20) return '🥀'
-  return '💀'
+function getPlantStage(health: number): ReactNode {
+  if (health >= 80) return <TreeDeciduous className="h-8 w-8 text-emerald-400" />
+  if (health >= 60) return <Leaf className="h-8 w-8 text-emerald-400" />
+  if (health >= 40) return <Sprout className="h-8 w-8 text-yellow-400" />
+  if (health >= 20) return <Flower className="h-8 w-8 text-red-400" />
+  return <Skull className="h-8 w-8 text-red-500" />
 }
 
 function getPlantLabel(health: number): string {
@@ -217,7 +222,7 @@ export default function WellnessGarden({
           const health = plantHealth[res.key]
           return (
             <div key={res.key} className="flex flex-col items-center gap-2">
-              <span className="text-3xl">{getPlantStage(health)}</span>
+              <span>{getPlantStage(health)}</span>
               <div className="flex flex-col items-center">
                 <span className={cn('text-[10px] font-bold', res.color)}>{res.label.split(' ')[0]}</span>
                 <span className={cn('text-[10px]', health >= 60 ? 'text-emerald-400' : health >= 40 ? 'text-yellow-400' : 'text-red-400')}>
@@ -252,7 +257,7 @@ export default function WellnessGarden({
           <div className="flex gap-8">
             {RESOURCE_CONFIG.map((res) => (
               <div key={res.key} className="flex flex-col items-center">
-                <span className="text-2xl">{getPlantStage(plantHealth[res.key])}</span>
+                <span>{getPlantStage(plantHealth[res.key])}</span>
                 <span className={cn('text-xs font-bold', res.color)}>{plantHealth[res.key]}%</span>
               </div>
             ))}

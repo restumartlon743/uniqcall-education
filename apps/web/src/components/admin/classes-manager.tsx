@@ -2,11 +2,10 @@
 
 import { useState } from 'react'
 import {
-  MOCK_CLASSES,
-  MOCK_SCHOOLS,
-  MOCK_TEACHERS,
-  type MockClass,
-} from '@/lib/mock-data'
+  useAdminClasses,
+  useAdminSchools,
+  useAdminTeachers,
+} from '@/hooks/use-supabase-data'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -33,17 +32,19 @@ import {
   Plus,
   Search,
   Pencil,
-  Trash2,
   BookOpen,
 } from 'lucide-react'
 
 export function ClassesManager() {
-  const [classes, setClasses] = useState<MockClass[]>(MOCK_CLASSES)
+  const { classes: classesData, loading: classesLoading } = useAdminClasses()
+  const { schools, loading: schoolsLoading } = useAdminSchools()
+  const { teachers, loading: teachersLoading } = useAdminTeachers()
+
   const [search, setSearch] = useState('')
   const [filterSchool, setFilterSchool] = useState('')
   const [filterGrade, setFilterGrade] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingClass, setEditingClass] = useState<MockClass | null>(null)
+  const [editingClass, setEditingClass] = useState<Record<string, any> | null>(null)
 
   const [formName, setFormName] = useState('')
   const [formGrade, setFormGrade] = useState<string>('10')
@@ -51,12 +52,14 @@ export function ClassesManager() {
   const [formSchool, setFormSchool] = useState('')
   const [formTeacher, setFormTeacher] = useState('')
 
-  const filtered = classes.filter((c) => {
+  const loading = classesLoading || schoolsLoading || teachersLoading
+
+  const filtered = classesData.filter((c) => {
     const matchSearch =
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.teacherName.toLowerCase().includes(search.toLowerCase())
-    const matchSchool = !filterSchool || c.schoolId === filterSchool
-    const matchGrade = !filterGrade || c.grade === Number(filterGrade)
+      (c.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (c.teacherName || '').toLowerCase().includes(search.toLowerCase())
+    const matchSchool = !filterSchool || c.schoolName === filterSchool
+    const matchGrade = !filterGrade || String(c.grade) === filterGrade
     return matchSearch && matchSchool && matchGrade
   })
 
@@ -65,60 +68,33 @@ export function ClassesManager() {
     setFormName('')
     setFormGrade('10')
     setFormYear('2025/2026')
-    setFormSchool(MOCK_SCHOOLS[0]?.id ?? '')
+    setFormSchool(schools[0]?.id ?? '')
     setFormTeacher('')
     setDialogOpen(true)
   }
 
-  function openEdit(cls: MockClass) {
+  function openEdit(cls: Record<string, any>) {
     setEditingClass(cls)
     setFormName(cls.name)
     setFormGrade(String(cls.grade))
     setFormYear(cls.academicYear)
-    setFormSchool(cls.schoolId)
+    setFormSchool(cls.schoolId || '')
     setFormTeacher(cls.teacherName)
     setDialogOpen(true)
   }
 
   function handleSave() {
     if (!formName.trim() || !formSchool) return
-
-    const school = MOCK_SCHOOLS.find((s) => s.id === formSchool)
-
-    if (editingClass) {
-      setClasses((prev) =>
-        prev.map((c) =>
-          c.id === editingClass.id
-            ? {
-                ...c,
-                name: formName,
-                grade: Number(formGrade) as 10 | 11 | 12,
-                academicYear: formYear,
-                schoolId: formSchool,
-                schoolName: school?.name ?? '',
-                teacherName: formTeacher,
-              }
-            : c
-        )
-      )
-    } else {
-      const newClass: MockClass = {
-        id: `cls${Date.now()}`,
-        name: formName,
-        grade: Number(formGrade) as 10 | 11 | 12,
-        academicYear: formYear,
-        schoolId: formSchool,
-        schoolName: school?.name ?? '',
-        teacherName: formTeacher,
-        studentCount: 0,
-      }
-      setClasses((prev) => [...prev, newClass])
-    }
+    // In a real app this would call a Supabase insert/update
     setDialogOpen(false)
   }
 
-  function handleDelete(id: string) {
-    setClasses((prev) => prev.filter((c) => c.id !== id))
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+      </div>
+    )
   }
 
   return (
@@ -141,8 +117,8 @@ export function ClassesManager() {
             className="w-48"
           >
             <SelectOption value="">All Schools</SelectOption>
-            {MOCK_SCHOOLS.map((s) => (
-              <SelectOption key={s.id} value={s.id}>
+            {schools.map((s) => (
+              <SelectOption key={s.id} value={s.name}>
                 {s.name}
               </SelectOption>
             ))}
@@ -212,13 +188,6 @@ export function ClassesManager() {
                         onClick={() => openEdit(cls)}
                       >
                         <Pencil className="h-3.5 w-3.5 text-slate-400" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-xs"
-                        onClick={() => handleDelete(cls.id)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5 text-red-400" />
                       </Button>
                     </div>
                   </TableCell>
@@ -294,7 +263,7 @@ export function ClassesManager() {
               onChange={(e) => setFormSchool(e.target.value)}
             >
               <SelectOption value="">Select school</SelectOption>
-              {MOCK_SCHOOLS.map((s) => (
+              {schools.map((s) => (
                 <SelectOption key={s.id} value={s.id}>
                   {s.name}
                 </SelectOption>
@@ -309,7 +278,7 @@ export function ClassesManager() {
               onChange={(e) => setFormTeacher(e.target.value)}
             >
               <SelectOption value="">Select teacher</SelectOption>
-              {MOCK_TEACHERS.map((t) => (
+              {teachers.map((t) => (
                 <SelectOption key={t.id} value={t.name}>
                   {t.name}
                 </SelectOption>

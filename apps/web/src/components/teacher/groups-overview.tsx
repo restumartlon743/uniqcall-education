@@ -3,19 +3,23 @@
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import {
-  MOCK_GROUPS,
-  MOCK_STUDENTS,
   getArchetypeBadgeVariant,
   ARCHETYPE_COLORS,
 } from '@/lib/mock-data'
+import {
+  useCurrentUser,
+  useTeacherStudents,
+  useTeacherGroups,
+} from '@/hooks/use-supabase-data'
+import type { StudentData } from '@/hooks/use-supabase-data'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Users2, Sparkles, FolderOpen, Zap } from 'lucide-react'
 
-function getStudentsForGroup(memberIds: string[]) {
+function getStudentsForGroup(memberIds: string[], students: StudentData[]) {
   return memberIds
-    .map((id) => MOCK_STUDENTS.find((s) => s.id === id))
+    .map((id) => students.find((s) => s.id === id))
     .filter(Boolean)
 }
 
@@ -34,7 +38,29 @@ function getSynergyGlow(score: number): string {
 }
 
 export function GroupsOverview() {
+  const { user, loading: userLoading } = useCurrentUser()
+  const { students, loading: studentsLoading } = useTeacherStudents(user?.id ?? '')
+  const { groups, loading: groupsLoading } = useTeacherGroups(user?.id ?? '')
+  const loading = userLoading || studentsLoading || groupsLoading
+
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
+  if (groups.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+        <Users2 className="h-12 w-12 mb-4 opacity-50" />
+        <p>No peer groups created yet</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -43,7 +69,7 @@ export function GroupsOverview() {
         <div>
           <h2 className="text-lg font-semibold text-white">Peer Groups</h2>
           <p className="text-sm text-muted-foreground">
-            {MOCK_GROUPS.length} groups · {MOCK_STUDENTS.length} students
+            {groups.length} groups · {students.length} students
             assigned
           </p>
         </div>
@@ -57,8 +83,8 @@ export function GroupsOverview() {
 
       {/* Group Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {MOCK_GROUPS.map((group) => {
-          const members = getStudentsForGroup(group.memberIds)
+        {groups.map((group) => {
+          const members = getStudentsForGroup(group.memberIds, students)
           const isSelected = selectedGroupId === group.id
           return (
             <Card
