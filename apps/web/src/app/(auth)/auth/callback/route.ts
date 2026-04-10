@@ -1,8 +1,24 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
-export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
+function getOrigin(request: NextRequest): string {
+  // Use explicit site URL env var if set (avoids 0.0.0.0 on Render)
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')
+  }
+  // Reconstruct from forwarded headers (reverse proxy / Render)
+  const forwardedHost = request.headers.get('x-forwarded-host')
+  const forwardedProto = request.headers.get('x-forwarded-proto') ?? 'https'
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`
+  }
+  // Fallback to request URL origin (works on localhost)
+  return new URL(request.url).origin
+}
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const origin = getOrigin(request)
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/'
 
