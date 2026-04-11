@@ -1,5 +1,13 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
+
+function getAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) return null
+  return createAdminClient(url, key, { auth: { persistSession: false } })
+}
 
 export async function updateSession(request: NextRequest) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
@@ -54,7 +62,8 @@ export async function updateSession(request: NextRequest) {
 
   // If authenticated, check for role-based routing
   if (user && !isPublicRoute && pathname !== '/onboarding') {
-    const { data: profile } = await supabase
+    const db = getAdminClient() ?? supabase
+    const { data: profile } = await db
       .from('profiles')
       .select('role')
       .eq('id', user.id)
@@ -92,7 +101,8 @@ export async function updateSession(request: NextRequest) {
 
   // If authenticated and on login page, redirect to dashboard
   if (user && (pathname === '/login' || pathname === '/')) {
-    const { data: profile } = await supabase
+    const db = getAdminClient() ?? supabase
+    const { data: profile } = await db
       .from('profiles')
       .select('role')
       .eq('id', user.id)

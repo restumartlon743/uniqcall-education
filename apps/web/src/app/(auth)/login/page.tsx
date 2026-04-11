@@ -79,33 +79,9 @@ export default function LoginPage() {
       return
     }
 
-    // Successful — redirect based on role
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-      const rolePaths: Record<string, string> = {
-        teacher: '/teacher',
-        parent: '/parent',
-        admin: '/admin',
-        student: '/student',
-      }
-
-      if (profile?.role) {
-        router.push(rolePaths[profile.role] ?? '/onboarding')
-      } else {
-        router.push('/onboarding')
-      }
-    } else {
-      router.push('/onboarding')
-    }
+    // Successful login — let middleware handle role-based routing
+    router.push('/')
+    router.refresh()
   }
 
   return (
