@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils'
 import {
   GraduationCap,
   ArrowRight,
+  Check,
+  X,
   CheckCircle2,
   Star,
   MessageCircle,
@@ -579,7 +581,7 @@ export default function TeachBackChallenge({
                       'text-xs font-bold',
                       selectedAnswer === currentQuestion.correctOption ? 'text-emerald-300' : 'text-red-300',
                     )}>
-                      {selectedAnswer === currentQuestion.correctOption ? '✓ Excellent explanation!' : '✗ Not the best approach'}
+                      {selectedAnswer === currentQuestion.correctOption ? <><Check className="mr-1 inline h-3 w-3" />Excellent explanation!</> : <><X className="mr-1 inline h-3 w-3" />Not the best approach</>}
                     </p>
                     <p className="mt-1 text-[10px] text-white/50">{currentQuestion.explanation}</p>
 

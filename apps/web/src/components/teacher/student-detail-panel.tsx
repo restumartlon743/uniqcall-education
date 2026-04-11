@@ -213,8 +213,7 @@ export function StudentDetailPanel({
       <Card
         className={cn(
           'glass',
-          student.status === 'needs_attention' &&
-            'border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]'
+          student.status === 'needs_attention' && 'border-amber-500/20'
         )}
       >
         <CardHeader className="pb-2">

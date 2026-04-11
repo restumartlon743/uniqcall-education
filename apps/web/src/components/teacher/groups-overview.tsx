@@ -30,11 +30,9 @@ function getSynergyColor(score: number): string {
 }
 
 function getSynergyGlow(score: number): string {
-  if (score >= 85)
-    return 'border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]'
-  if (score >= 70)
-    return 'border-amber-500/20 shadow-[0_0_20px_rgba(245,158,11,0.1)]'
-  return 'border-red-500/20 shadow-[0_0_20px_rgba(239,68,68,0.1)]'
+  if (score >= 85) return 'border-emerald-500/20'
+  if (score >= 70) return 'border-amber-500/20'
+  return 'border-red-500/20'
 }
 
 export function GroupsOverview() {
@@ -74,7 +72,7 @@ export function GroupsOverview() {
           </p>
         </div>
         <Button
-          className="gap-2 bg-linear-to-r from-purple-600 to-cyan-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.4)]"
+          className="gap-2 bg-purple-600 text-white hover:bg-purple-700"
         >
           <Sparkles className="h-4 w-4" />
           Generate Groups
@@ -90,7 +88,7 @@ export function GroupsOverview() {
             <Card
               key={group.id}
               className={cn(
-                'glass card-glow-hover cursor-pointer transition-all duration-300 hover:scale-[1.01]',
+                'glass cursor-pointer transition-colors',
                 getSynergyGlow(group.synergyScore),
                 isSelected && 'ring-1 ring-purple-500/40'
               )}

@@ -238,7 +238,7 @@ export default function LogicGridPuzzle({
           Match each <span className="text-violet-400">{categories[0][0].charAt(0).toUpperCase() === categories[0][0].charAt(0) ? 'person' : 'item'}</span> to their <span className="text-cyan-400">attribute</span>
         </h2>
         <p className="mt-1 text-xs text-white/40">
-          Click cells to cycle: empty → ✓ → ✗ → empty
+          Click cells to cycle: empty <Check className="mx-0.5 inline h-3 w-3" /> <X className="mx-0.5 inline h-3 w-3" /> empty
         </p>
       </motion.div>
 
@@ -430,8 +430,8 @@ export default function LogicGridPuzzle({
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-xs text-amber-300/80"
             >
-              <Lightbulb className="mr-1 inline h-3 w-3 text-amber-400" /> Start with the direct statements — mark those cells ✓ first,
-              then eliminate the rest of that row and column with ✗.
+              <Lightbulb className="mr-1 inline h-3 w-3 text-amber-400" /> Start with the direct statements — mark those cells <Check className="mx-0.5 inline h-3 w-3" /> first,
+              then eliminate the rest of that row and column with <X className="mx-0.5 inline h-3 w-3" />.
             </motion.div>
           )}
         </AnimatePresence>

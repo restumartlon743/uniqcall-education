@@ -136,7 +136,7 @@ export function TeacherSettings() {
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button className="gap-2 bg-linear-to-r from-purple-600 to-cyan-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.4)]">
+        <Button className="gap-2 bg-purple-600 text-white hover:bg-purple-700">
           <Settings className="h-4 w-4" />
           Save Settings
         </Button>

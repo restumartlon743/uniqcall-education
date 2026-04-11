@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils'
 import {
   Notebook,
   ArrowRight,
+  Check,
+  X,
   CheckCircle2,
   Star,
   Search,
@@ -509,7 +511,7 @@ export default function FieldJournal({
                     const catCorrect = categorizations[key] === d.category
                     return (
                       <div key={d.id} className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs">
-                        <span className={cn(wasFound ? 'text-emerald-400' : 'text-red-400')}>{wasFound ? '✓' : '✗'}</span>
+                        <span className={cn(wasFound ? 'text-emerald-400' : 'text-red-400')}>{wasFound ? <Check className="h-3 w-3 inline" /> : <X className="h-3 w-3 inline" />}</span>
                         <span className="w-32 font-bold text-white/60">{d.name}</span>
                         {wasFound && (
                           <span className={cn(catCorrect ? 'text-emerald-400' : 'text-red-400')}>

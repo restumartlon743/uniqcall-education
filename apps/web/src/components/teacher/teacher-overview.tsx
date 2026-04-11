@@ -105,12 +105,12 @@ export function TeacherOverview() {
             <div
               key={stat.label}
               className={cn(
-                'glass card-glow-hover group relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:scale-[1.02]',
+                'glass rounded-xl p-5',
                 isRed
-                  ? 'border-red-500/30 shadow-[0_0_20px_rgba(239,68,68,0.15)]'
+                  ? 'border-red-500/20'
                   : stat.color === 'cyan'
-                    ? 'border-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.1)]'
-                    : 'border-purple-500/20 shadow-[0_0_20px_rgba(139,92,246,0.1)]'
+                    ? 'border-cyan-500/15'
+                    : 'border-purple-500/15'
               )}
             >
               <div className="flex items-center justify-between">
@@ -139,17 +139,6 @@ export function TeacherOverview() {
                   <Icon className="h-6 w-6" />
                 </div>
               </div>
-              {/* Bottom glow line */}
-              <div
-                className={cn(
-                  'absolute bottom-0 left-0 h-0.5 w-full drop-shadow-[0_0_8px_rgba(139,92,246,0.6)]',
-                  isRed
-                    ? 'bg-linear-to-r from-transparent via-red-500 to-transparent'
-                    : stat.color === 'cyan'
-                      ? 'bg-linear-to-r from-transparent via-cyan-500 to-transparent'
-                      : 'bg-linear-to-r from-transparent via-purple-500 to-transparent'
-                )}
-              />
             </div>
           )
         })}
@@ -157,7 +146,7 @@ export function TeacherOverview() {
 
       {/* Alert Banner */}
       {needsAttention > 0 && (
-        <div className="relative overflow-hidden rounded-xl border border-red-500/30 bg-red-500/10 p-4 shadow-[0_0_25px_rgba(239,68,68,0.15)] transition-all duration-300 hover:border-red-500/50 hover:shadow-[0_0_35px_rgba(239,68,68,0.25)]">
+        <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-500/20">
               <AlertTriangle className="h-5 w-5 text-red-400" />
@@ -172,7 +161,6 @@ export function TeacherOverview() {
               </p>
             </div>
           </div>
-          <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-red-500/5 blur-2xl" />
         </div>
       )}
 

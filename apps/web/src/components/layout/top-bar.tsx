@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Bell, LogOut, Search, User } from 'lucide-react'
+import { Bell, LogOut, User } from 'lucide-react'
 import { useState } from 'react'
 import { useLanguage } from '@/lib/i18n/context'
 import { LanguageToggle } from '@/components/ui/language-toggle'
@@ -28,47 +28,40 @@ export function TopBar({ title, userName, avatarUrl }: TopBarProps) {
   }
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-white/10 bg-[#0A0E27]/60 px-6 backdrop-blur-md">
+    <header className="flex h-14 items-center justify-between border-b border-white/[0.06] bg-[#0A0E27] px-6">
       {/* Page Title */}
-      <h1 className="font-heading text-xl font-semibold text-white">
+      <h1 className="text-sm font-semibold text-white">
         {title}
       </h1>
 
       {/* Right section */}
-      <div className="flex items-center gap-4">
-        {/* Search */}
-        <div className="hidden items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 md:flex">
-          <Search className="h-4 w-4 text-slate-500" />
-          <input
-            type="text"
-            placeholder={t('common.search_placeholder')}
-            className="w-44 bg-transparent text-sm text-white placeholder:text-slate-600 focus:outline-none"
-          />
-        </div>
-
+      <div className="flex items-center gap-2">
         {/* Notifications */}
-        <button className="relative rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/5 hover:text-white">
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-cyan-400" />
+        <button className="relative rounded-md p-2 text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-200">
+          <Bell className="h-4 w-4" />
+          <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-cyan-400" />
         </button>
 
         {/* Language Toggle */}
         <LanguageToggle />
 
+        {/* Separator */}
+        <div className="mx-1 h-5 w-px bg-white/[0.06]" />
+
         {/* User dropdown */}
         <div className="relative">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-white/5"
+            className="flex items-center gap-2 rounded-md p-1 transition-colors hover:bg-white/5"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-purple-500 to-cyan-500 text-xs font-bold text-white">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 text-[10px] font-bold text-white">
               {avatarUrl ? (
                 <Image
                   src={avatarUrl}
                   alt={userName ?? 'User'}
-                  width={32}
-                  height={32}
-                  className="h-8 w-8 rounded-full object-cover"
+                  width={28}
+                  height={28}
+                  className="h-7 w-7 rounded-full object-cover"
                 />
               ) : (
                 (userName?.[0] ?? 'U').toUpperCase()
@@ -82,21 +75,21 @@ export function TopBar({ title, userName, avatarUrl }: TopBarProps) {
                 className="fixed inset-0 z-40"
                 onClick={() => setDropdownOpen(false)}
               />
-              <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-xl border border-white/10 bg-[#151B3B] p-1 shadow-xl">
+              <div className="absolute right-0 top-full z-50 mt-2 w-44 rounded-lg border border-white/[0.08] bg-[#151B3B] p-1 shadow-xl">
                 <button
                   onClick={() => {
                     setDropdownOpen(false)
                   }}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
+                  className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-[13px] text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
                 >
-                  <User className="h-4 w-4" />
+                  <User className="h-3.5 w-3.5" />
                   {t('settings.profile')}
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 transition-colors hover:bg-red-500/10"
+                  className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-[13px] text-red-400 transition-colors hover:bg-red-500/10"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-3.5 w-3.5" />
                   {t('common.sign_out')}
                 </button>
               </div>

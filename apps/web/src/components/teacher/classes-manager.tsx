@@ -15,7 +15,6 @@ import {
   RefreshCw,
   GraduationCap,
 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
 
 interface ClassRow {
   id: string
@@ -95,7 +94,6 @@ export function ClassesManager() {
     setForm({ name: '', grade: '', academic_year: form.academic_year })
     setShowCreate(false)
     setCreating(false)
-    // Reload page to refresh the list
     window.location.reload()
   }
 
@@ -120,7 +118,7 @@ export function ClassesManager() {
         </div>
         <Button
           onClick={() => setShowCreate((v) => !v)}
-          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+          className="gap-2 bg-purple-600 hover:bg-purple-700 text-white"
         >
           <Plus className="h-4 w-4" />
           Buat Kelas
@@ -128,103 +126,94 @@ export function ClassesManager() {
       </div>
 
       {/* Create form */}
-      <AnimatePresence>
-        {showCreate && (
-          <motion.div
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Card className="border border-purple-500/30 bg-[#0D1333]">
-              <CardHeader>
-                <CardTitle className="text-white text-base flex items-center gap-2">
-                  <GraduationCap className="h-5 w-5 text-purple-400" />
-                  Buat Kelas Baru
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleCreate} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="md:col-span-1">
-                      <label className="block text-xs text-white/50 mb-1">
-                        Nama Kelas <span className="text-red-400">*</span>
-                      </label>
-                      <Input
-                        placeholder="cth: 12 IPA 1"
-                        value={form.name}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, name: e.target.value }))
-                        }
-                        required
-                        className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-white/50 mb-1">
-                        Tingkat (opsional)
-                      </label>
-                      <Input
-                        type="number"
-                        placeholder="cth: 12"
-                        min={1}
-                        max={12}
-                        value={form.grade}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, grade: e.target.value }))
-                        }
-                        className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-white/50 mb-1">
-                        Tahun Ajaran
-                      </label>
-                      <Input
-                        placeholder="cth: 2025/2026"
-                        value={form.academic_year}
-                        onChange={(e) =>
-                          setForm((f) => ({
-                            ...f,
-                            academic_year: e.target.value,
-                          }))
-                        }
-                        className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
-                      />
-                    </div>
-                  </div>
+      {showCreate && (
+        <Card className="glass border-purple-500/20">
+          <CardHeader>
+            <CardTitle className="text-white text-base flex items-center gap-2">
+              <GraduationCap className="h-5 w-5 text-purple-400" />
+              Buat Kelas Baru
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-1">
+                  <label className="block text-xs text-white/50 mb-1">
+                    Nama Kelas <span className="text-red-400">*</span>
+                  </label>
+                  <Input
+                    placeholder="cth: 12 IPA 1"
+                    value={form.name}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, name: e.target.value }))
+                    }
+                    required
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-white/50 mb-1">
+                    Tingkat (opsional)
+                  </label>
+                  <Input
+                    type="number"
+                    placeholder="cth: 12"
+                    min={1}
+                    max={12}
+                    value={form.grade}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, grade: e.target.value }))
+                    }
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-white/50 mb-1">
+                    Tahun Ajaran
+                  </label>
+                  <Input
+                    placeholder="cth: 2025/2026"
+                    value={form.academic_year}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        academic_year: e.target.value,
+                      }))
+                    }
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                  />
+                </div>
+              </div>
 
-                  {createError && (
-                    <p className="text-red-400 text-sm">{createError}</p>
+              {createError && (
+                <p className="text-red-400 text-sm">{createError}</p>
+              )}
+
+              <div className="flex gap-3 justify-end">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setShowCreate(false)}
+                  className="text-white/60 hover:text-white"
+                >
+                  Batal
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={creating || !form.name.trim()}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  {creating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    'Buat Kelas'
                   )}
-
-                  <div className="flex gap-3 justify-end">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => setShowCreate(false)}
-                      className="text-white/60 hover:text-white"
-                    >
-                      Batal
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={creating || !form.name.trim()}
-                      className="bg-purple-600 hover:bg-purple-700 text-white"
-                    >
-                      {creating ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        'Buat Kelas'
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Class list */}
       {classes.length === 0 ? (
@@ -237,60 +226,56 @@ export function ClassesManager() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {(classes as ClassRow[]).map((cls) => (
-            <motion.div
+            <Card
               key={cls.id}
-              initial={{ opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.2 }}
+              className="glass transition-colors hover:border-purple-500/20"
             >
-              <Card className="border border-white/10 bg-[#0D1333] hover:border-purple-500/40 transition-colors">
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <CardTitle className="text-white text-base font-semibold">
-                        {cls.name}
-                      </CardTitle>
-                      <p className="text-xs text-white/40 mt-0.5">
-                        {cls.schools?.name ?? '—'}
-                        {cls.grade ? ` · Kelas ${cls.grade}` : ''}
-                        {cls.academic_year ? ` · ${cls.academic_year}` : ''}
-                      </p>
-                    </div>
-                    <BookOpen className="h-5 w-5 text-purple-400 shrink-0 mt-0.5" />
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {/* Class code highlight */}
-                  <div className="rounded-lg bg-white/5 border border-purple-500/30 p-3">
-                    <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">
-                      Kode Kelas
+              <CardHeader className="pb-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <CardTitle className="text-white text-base font-semibold">
+                      {cls.name}
+                    </CardTitle>
+                    <p className="text-xs text-white/40 mt-0.5">
+                      {cls.schools?.name ?? '—'}
+                      {cls.grade ? ` · Kelas ${cls.grade}` : ''}
+                      {cls.academic_year ? ` · ${cls.academic_year}` : ''}
                     </p>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-2xl font-mono font-bold text-purple-300 tracking-widest">
-                        {cls.class_code ?? '——'}
-                      </span>
-                      <button
-                        onClick={() => copyCode(cls.id, cls.class_code)}
-                        className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white transition-colors rounded-md px-2 py-1 bg-white/5 hover:bg-white/10"
-                        title="Salin kode"
-                      >
-                        {copied[cls.id] ? (
-                          <>
-                            <Check className="h-3.5 w-3.5 text-green-400" />
-                            <span className="text-green-400">Tersalin</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="h-3.5 w-3.5" />
-                            Salin
-                          </>
-                        )}
-                      </button>
-                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+                  <BookOpen className="h-5 w-5 text-purple-400 shrink-0 mt-0.5" />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {/* Class code highlight */}
+                <div className="rounded-lg bg-white/5 border border-purple-500/30 p-3">
+                  <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">
+                    Kode Kelas
+                  </p>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-2xl font-mono font-bold text-purple-300 tracking-widest">
+                      {cls.class_code ?? '——'}
+                    </span>
+                    <button
+                      onClick={() => copyCode(cls.id, cls.class_code)}
+                      className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white transition-colors rounded-md px-2 py-1 bg-white/5 hover:bg-white/10"
+                      title="Salin kode"
+                    >
+                      {copied[cls.id] ? (
+                        <>
+                          <Check className="h-3.5 w-3.5 text-green-400" />
+                          <span className="text-green-400">Tersalin</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3.5 w-3.5" />
+                          Salin
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}

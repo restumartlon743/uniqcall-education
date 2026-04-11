@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import {
   MessageSquareWarning,
   ArrowRight,
+  Check,
   CheckCircle2,
   Star,
   Shield,
@@ -445,7 +446,7 @@ export default function DebateArena({
                           'flex h-5 w-5 shrink-0 items-center justify-center rounded border text-xs transition-all',
                           isSelected ? 'border-cyan-500 bg-cyan-500 text-white' : 'border-white/20',
                         )}>
-                          {isSelected && '✓'}
+                          {isSelected && <Check className="h-3 w-3" />}
                         </div>
                         {e.text}
                       </motion.button>

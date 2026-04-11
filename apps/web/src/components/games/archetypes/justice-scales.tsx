@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils'
 import {
   Scale,
   ArrowRight,
+  ArrowUp,
+  ArrowDown,
   CheckCircle2,
   XCircle,
   GripVertical,
@@ -406,7 +408,7 @@ export default function JusticeScales({
                   onDrop={() => handleDrop('pro')}
                   className="min-h-[80px] rounded-xl border-2 border-dashed border-emerald-500/20 bg-emerald-500/5 p-3"
                 >
-                  <p className="mb-2 text-center text-xs font-bold text-emerald-400">⬆ PRO (Supports Claim)</p>
+                  <p className="mb-2 text-center text-xs font-bold text-emerald-400"><ArrowUp className="mr-1 inline h-3 w-3" />PRO (Supports Claim)</p>
                   <div className="flex flex-col gap-1">
                     {proEvidence.map((e) => (
                       <div key={e.id} className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-200">
@@ -421,7 +423,7 @@ export default function JusticeScales({
                   onDrop={() => handleDrop('con')}
                   className="min-h-[80px] rounded-xl border-2 border-dashed border-red-500/20 bg-red-500/5 p-3"
                 >
-                  <p className="mb-2 text-center text-xs font-bold text-red-400">⬇ CON (Against Claim)</p>
+                  <p className="mb-2 text-center text-xs font-bold text-red-400"><ArrowDown className="mr-1 inline h-3 w-3" />CON (Against Claim)</p>
                   <div className="flex flex-col gap-1">
                     {conEvidence.map((e) => (
                       <div key={e.id} className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs text-red-200">
@@ -554,8 +556,8 @@ export default function JusticeScales({
                 )}
               >
                 {scenario.verdicts[selectedVerdict!]?.correct
-                  ? '✓ Correct verdict!'
-                  : `✗ The fair verdict was: "${scenario.verdicts.find((v) => v.correct)?.label}"`}
+                  ? <><CheckCircle2 className="mr-1 inline h-4 w-4" />Correct verdict!</>
+                  : <><XCircle className="mr-1 inline h-4 w-4" />The fair verdict was: &quot;{scenario.verdicts.find((v) => v.correct)?.label}&quot;</>}
               </div>
 
               <button

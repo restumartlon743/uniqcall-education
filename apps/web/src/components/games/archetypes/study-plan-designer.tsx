@@ -282,10 +282,10 @@ export default function StudyPlanDesigner({
             <p className="mt-1 text-xs text-white/60"><Target className="h-3 w-3 inline mr-1" />{profile.goal}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {profile.strengths.map((s) => (
-                <span key={s} className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-300">✓ {s}</span>
+                <span key={s} className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-300"><CheckCircle2 className="mr-0.5 inline h-3 w-3" />{s}</span>
               ))}
               {profile.weaknesses.map((w) => (
-                <span key={w} className="rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] text-red-300">⚠ {w} (needs 2× time)</span>
+                <span key={w} className="rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] text-red-300"><AlertTriangle className="mr-0.5 inline h-3 w-3" />{w} (needs 2× time)</span>
               ))}
             </div>
           </div>

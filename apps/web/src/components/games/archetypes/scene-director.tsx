@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils'
 import {
   Clapperboard,
   ArrowRight,
+  Check,
+  X,
   CheckCircle2,
   Star,
   Users,
@@ -528,10 +530,10 @@ export default function SceneDirector({
                         <span className="w-20 font-bold text-white/60">{char?.name}</span>
                         <div className="flex gap-3">
                           <span className={cn(posCorrect ? 'text-emerald-400' : 'text-red-400')}>
-                            {posCorrect ? '✓' : '✗'} {POSITION_LABELS[playerPos!]} {!posCorrect && `→ ${POSITION_LABELS[cp.position]}`}
+                            {posCorrect ? <Check className="mr-0.5 inline h-3 w-3" /> : <X className="mr-0.5 inline h-3 w-3" />} {POSITION_LABELS[playerPos!]} {!posCorrect && `→ ${POSITION_LABELS[cp.position]}`}
                           </span>
                           <span className={cn(emoCorrect ? 'text-emerald-400' : 'text-red-400')}>
-                            {emoCorrect ? '✓' : '✗'} {(() => { const Icon = EMOTIONS.find((e) => e.value === playerEmo)?.icon; return Icon ? <Icon className="h-3 w-3 inline" /> : null; })()} {!emoCorrect && <>{' → '}{(() => { const Icon = EMOTIONS.find((e) => e.value === cp.emotion)?.icon; return Icon ? <Icon className="h-3 w-3 inline" /> : null; })()}</>}
+                            {emoCorrect ? <Check className="mr-0.5 inline h-3 w-3" /> : <X className="mr-0.5 inline h-3 w-3" />} {(() => { const Icon = EMOTIONS.find((e) => e.value === playerEmo)?.icon; return Icon ? <Icon className="h-3 w-3 inline" /> : null; })()} {!emoCorrect && <>{' → '}{(() => { const Icon = EMOTIONS.find((e) => e.value === cp.emotion)?.icon; return Icon ? <Icon className="h-3 w-3 inline" /> : null; })()}</>}
                           </span>
                         </div>
                       </div>

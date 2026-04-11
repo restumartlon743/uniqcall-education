@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import {
-  Play, RotateCcw, Trash2, CheckCircle2, XCircle, ArrowUp, ArrowRight,
+  Play, RotateCcw, Trash2, Check, CheckCircle2, XCircle, ArrowUp, ArrowRight,
   CornerDownRight, Repeat, AlertTriangle, Flag, Bot,
 } from 'lucide-react'
 import type { GameDifficulty } from '@/lib/game-data'
@@ -689,7 +689,7 @@ export default function CodeMachine({
                               onClick={() => setEditingLoop(isEditing ? null : block.id)}
                               className="rounded px-1 text-[10px] text-violet-400 hover:bg-violet-500/20"
                             >
-                              {isEditing ? '✓' : `{${block.children?.length || 0}}`}
+                              {isEditing ? <Check className="h-3 w-3" /> : `{${block.children?.length || 0}}`}
                             </button>
                           )}
                           <button

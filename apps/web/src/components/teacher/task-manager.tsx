@@ -61,7 +61,7 @@ export function TaskManager() {
             <p className="text-sm text-muted-foreground">No tasks created yet</p>
           </div>
           <Button
-            className="gap-2 bg-linear-to-r from-purple-600 to-cyan-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.4)]"
+            className="gap-2 bg-purple-600 text-white hover:bg-purple-700"
             onClick={() => setDialogOpen(true)}
           >
             <Plus className="h-4 w-4" />
@@ -89,7 +89,7 @@ export function TaskManager() {
           </p>
         </div>
         <Button
-          className="gap-2 bg-linear-to-r from-purple-600 to-cyan-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.4)]"
+          className="gap-2 bg-purple-600 text-white hover:bg-purple-700"
           onClick={() => setDialogOpen(true)}
         >
           <Plus className="h-4 w-4" />
@@ -116,7 +116,7 @@ function TaskCard({ task }: { task: TaskData }) {
     : 0
 
   return (
-    <Card className="glass card-glow-hover border-purple-500/20 transition-all duration-300 hover:border-purple-500/40">
+    <Card className="glass border-white/10 transition-colors hover:border-purple-500/20">
       <CardContent className="px-5 py-4">
         <div className="flex items-start justify-between gap-4">
           {/* Left: Info */}

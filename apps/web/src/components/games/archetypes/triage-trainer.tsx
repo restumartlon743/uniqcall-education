@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils'
 import {
   Stethoscope,
   ArrowRight,
+  Check,
+  X,
   CheckCircle2,
   Star,
   Timer,
@@ -355,7 +357,7 @@ export default function TriageTrainer({
                       return (
                         <div key={c.id} className={cn('flex items-center gap-3 rounded-lg border p-3 text-xs', SEVERITY_CONFIG[c.severity].bg)}>
                           <span className={cn('font-bold', isCorrect ? 'text-emerald-400' : 'text-red-400')}>
-                            {isCorrect ? '✓' : `✗ You: #${playerIdx + 1}`}
+                            {isCorrect ? <Check className="inline h-3 w-3" /> : <><X className="mr-0.5 inline h-3 w-3" />You: #{playerIdx + 1}</>}
                           </span>
                           <span className="font-bold text-white/60">#{i + 1}</span>
                           <span className={cn('font-bold', SEVERITY_CONFIG[c.severity].color)}>[{SEVERITY_CONFIG[c.severity].label}]</span>

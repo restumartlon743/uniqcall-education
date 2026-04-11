@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   useAdminClasses,
   useAdminSchools,
   useAdminTeachers,
 } from '@/hooks/use-supabase-data'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -32,8 +32,33 @@ import {
   Plus,
   Search,
   Pencil,
-  BookOpen,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+  Inbox,
 } from 'lucide-react'
+import {
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  flexRender,
+  type ColumnDef,
+  type SortingState,
+} from '@tanstack/react-table'
+
+function SortHeader({ column, children }: { column: { getToggleSortingHandler: () => undefined | ((e: unknown) => void); getIsSorted: () => false | 'asc' | 'desc' }; children: React.ReactNode }) {
+  return (
+    <button
+      className="flex items-center gap-1 hover:text-white transition-colors"
+      onClick={column.getToggleSortingHandler()}
+    >
+      {children}
+      <ArrowUpDown className="h-3 w-3" />
+    </button>
+  )
+}
 
 export function ClassesManager() {
   const { classes: classesData, loading: classesLoading } = useAdminClasses()
@@ -51,17 +76,17 @@ export function ClassesManager() {
   const [formYear, setFormYear] = useState('2025/2026')
   const [formSchool, setFormSchool] = useState('')
   const [formTeacher, setFormTeacher] = useState('')
+  const [sorting, setSorting] = useState<SortingState>([])
 
-  const loading = classesLoading || schoolsLoading || teachersLoading
+  const isLoading = classesLoading || schoolsLoading || teachersLoading
 
-  const filtered = classesData.filter((c) => {
-    const matchSearch =
-      (c.name || '').toLowerCase().includes(search.toLowerCase()) ||
-      (c.teacherName || '').toLowerCase().includes(search.toLowerCase())
-    const matchSchool = !filterSchool || c.schoolName === filterSchool
-    const matchGrade = !filterGrade || String(c.grade) === filterGrade
-    return matchSearch && matchSchool && matchGrade
-  })
+  const filteredData = useMemo(() => {
+    return classesData.filter((c) => {
+      const matchSchool = !filterSchool || c.schoolName === filterSchool
+      const matchGrade = !filterGrade || String(c.grade) === filterGrade
+      return matchSchool && matchGrade
+    })
+  }, [classesData, filterSchool, filterGrade])
 
   function openAdd() {
     setEditingClass(null)
@@ -89,13 +114,96 @@ export function ClassesManager() {
     setDialogOpen(false)
   }
 
-  if (loading) {
+  const columns = useMemo<ColumnDef<Record<string, any>>[]>(
+    () => [
+      {
+        accessorKey: 'name',
+        header: ({ column }) => <SortHeader column={column}>Class Name</SortHeader>,
+        cell: ({ getValue }) => (
+          <span className="font-medium">{getValue() as string}</span>
+        ),
+      },
+      {
+        accessorKey: 'grade',
+        header: ({ column }) => <SortHeader column={column}>Grade</SortHeader>,
+        cell: ({ getValue }) => (
+          <Badge variant="logical">{getValue() as number}</Badge>
+        ),
+      },
+      {
+        accessorKey: 'academicYear',
+        header: 'Academic Year',
+        cell: ({ getValue }) => (
+          <span className="text-sm text-slate-400">{getValue() as string}</span>
+        ),
+      },
+      {
+        accessorKey: 'schoolName',
+        header: ({ column }) => <SortHeader column={column}>School</SortHeader>,
+        cell: ({ getValue }) => (
+          <span className="text-sm text-slate-300">{getValue() as string}</span>
+        ),
+      },
+      {
+        accessorKey: 'teacherName',
+        header: 'Teacher',
+        cell: ({ getValue }) => {
+          const val = getValue() as string
+          return val ? (
+            <span className="text-sm text-slate-300">{val}</span>
+          ) : (
+            <span className="text-xs text-slate-500">Unassigned</span>
+          )
+        },
+      },
+      {
+        accessorKey: 'studentCount',
+        header: ({ column }) => <SortHeader column={column}>Students</SortHeader>,
+        cell: ({ getValue }) => (
+          <Badge variant="creative">{getValue() as number}</Badge>
+        ),
+      },
+      {
+        id: 'actions',
+        header: () => <span className="sr-only">Actions</span>,
+        cell: ({ row }) => (
+          <div className="flex items-center justify-end">
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={() => openEdit(row.original)}
+            >
+              <Pencil className="h-3.5 w-3.5 text-slate-400" />
+            </Button>
+          </div>
+        ),
+        enableSorting: false,
+      },
+    ],
+    []
+  )
+
+  const table = useReactTable({
+    data: filteredData,
+    columns,
+    state: { sorting, globalFilter: search },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: { pagination: { pageSize: 10 } },
+  })
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
       </div>
     )
   }
+
+  const rows = table.getRowModel().rows
 
   return (
     <div className="space-y-6">
@@ -142,69 +250,79 @@ export function ClassesManager() {
 
       {/* Table */}
       <Card className="glass">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-cyan-400" />
-            Classes ({filtered.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Class Name</TableHead>
-                <TableHead>Grade</TableHead>
-                <TableHead>Academic Year</TableHead>
-                <TableHead>School</TableHead>
-                <TableHead>Teacher</TableHead>
-                <TableHead>Students</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((cls) => (
-                <TableRow key={cls.id}>
-                  <TableCell className="font-medium">{cls.name}</TableCell>
-                  <TableCell>
-                    <Badge variant="logical">{cls.grade}</Badge>
-                  </TableCell>
-                  <TableCell className="text-sm text-slate-400">
-                    {cls.academicYear}
-                  </TableCell>
-                  <TableCell className="text-sm text-slate-300">
-                    {cls.schoolName}
-                  </TableCell>
-                  <TableCell className="text-sm text-slate-300">
-                    {cls.teacherName}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="creative">{cls.studentCount}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon-xs"
-                        onClick={() => openEdit(cls)}
-                      >
-                        <Pencil className="h-3.5 w-3.5 text-slate-400" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filtered.length === 0 && (
-                <TableRow>
-                  <TableCell
-                    colSpan={7}
-                    className="text-center text-slate-400"
-                  >
-                    No classes found.
-                  </TableCell>
-                </TableRow>
+        <CardContent className="pt-4">
+          {classesData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-slate-500">
+              <Inbox className="h-8 w-8 mb-2" />
+              <p className="text-sm">No classes yet.</p>
+            </div>
+          ) : (
+            <div>
+              <Table>
+                <TableHeader>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(header.column.columnDef.header, header.getContext())}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {rows.length > 0 ? (
+                    rows.map((row) => (
+                      <TableRow key={row.id}>
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} className="text-center text-slate-500 py-8">
+                        No results match your search.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+
+              {table.getPageCount() > 1 && (
+                <div className="flex items-center justify-between border-t border-white/[0.06] px-3 pt-3 mt-2">
+                  <p className="text-xs text-slate-500">
+                    {table.getFilteredRowModel().rows.length} total
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={() => table.previousPage()}
+                      disabled={!table.getCanPreviousPage()}
+                    >
+                      <ChevronLeft className="h-3.5 w-3.5" />
+                    </Button>
+                    <span className="px-2 text-xs text-slate-400">
+                      {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={() => table.nextPage()}
+                      disabled={!table.getCanNextPage()}
+                    >
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
               )}
-            </TableBody>
-          </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
 

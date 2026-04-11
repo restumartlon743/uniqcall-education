@@ -16,7 +16,6 @@ import {
   BellOff,
   Link2,
   Shield,
-  Sparkles,
   Check,
   Users,
 } from 'lucide-react'
@@ -134,7 +133,6 @@ export function ParentSettings() {
                     </p>
                   </div>
                   <Badge variant={child.archetype.code.toLowerCase() as never}>
-                    <Sparkles className="mr-1 h-3 w-3" />
                     {child.archetype.name}
                   </Badge>
                 </div>

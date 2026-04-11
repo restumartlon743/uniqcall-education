@@ -256,7 +256,7 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
           </Button>
           <Button
             type="submit"
-            className="bg-linear-to-r from-purple-600 to-cyan-600 text-white"
+            className="bg-purple-600 text-white hover:bg-purple-700"
           >
             Create Task
           </Button>

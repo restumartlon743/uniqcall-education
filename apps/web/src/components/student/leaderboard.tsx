@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import {
   Trophy,
   Star,
@@ -9,7 +8,7 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react'
-import { GlowCard } from '@/components/effects/glow-card'
+import { Card, CardContent } from '@/components/ui/card'
 import { ArchetypeAvatar } from '@/components/effects/archetype-avatar'
 import { ARCHETYPE_COLORS } from '@/lib/mock-data'
 import {
@@ -79,30 +78,25 @@ function PodiumCard({
   isCurrentUser: boolean
 }) {
   const { t } = useLanguage()
-  const accentMap = {
-    1: { glow: 'rgba(255,215,0,0.4)', border: 'border-yellow-500/40', bg: 'from-yellow-500/10 to-amber-500/5' },
-    2: { glow: 'rgba(192,192,192,0.3)', border: 'border-gray-400/30', bg: 'from-gray-400/10 to-gray-500/5' },
-    3: { glow: 'rgba(205,127,50,0.3)', border: 'border-orange-700/30', bg: 'from-orange-700/10 to-orange-800/5' },
+  const borderMap = {
+    1: 'border-yellow-500/30',
+    2: 'border-gray-400/20',
+    3: 'border-orange-700/20',
   }
-  const accent = accentMap[place]
   const sizeClass = place === 1 ? 'h-20 w-20' : 'h-16 w-16'
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: place * 0.1, duration: 0.5 }}
+    <div
       className={`relative flex flex-col items-center ${place === 1 ? 'order-2 -mt-4' : place === 2 ? 'order-1 mt-4' : 'order-3 mt-4'}`}
     >
       <div
-        className={`relative rounded-2xl border bg-gradient-to-b ${accent.bg} ${accent.border} p-4 backdrop-blur-xl ${isCurrentUser ? 'ring-2 ring-purple-500/50' : ''}`}
-        style={{ boxShadow: `0 0 25px ${accent.glow}` }}
+        className={`relative rounded-2xl border bg-white/5 p-4 ${borderMap[place]} ${isCurrentUser ? 'ring-2 ring-purple-500/30' : ''}`}
       >
         {place === 1 && (
           <CrownIcon className="absolute -top-5 left-1/2 h-8 w-8 -translate-x-1/2 text-yellow-400" />
         )}
         <div className="flex flex-col items-center">
-          <div className={`relative ${sizeClass} overflow-hidden rounded-xl border-2 ${accent.border} bg-gray-900/50`}>
+          <div className={`relative ${sizeClass} overflow-hidden rounded-xl border ${borderMap[place]} bg-gray-900/50`}>
             <ArchetypeAvatar archetypeCode={entry.archetypeCode} gender="male" size={place === 1 ? 'lg' : 'md'} />
           </div>
           <MedalIcon place={place} className="mt-2 h-7 w-7" />
@@ -126,7 +120,7 @@ function PodiumCard({
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -142,13 +136,10 @@ function RankRow({
   const { t } = useLanguage()
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: entry.rank * 0.02, duration: 0.3 }}
-      className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-all hover:bg-white/5 ${
+    <div
+      className={`flex items-center gap-3 rounded-xl px-4 py-3 ${
         isCurrentUser
-          ? 'border border-purple-500/30 bg-purple-500/5 shadow-[0_0_20px_rgba(168,85,247,0.15)]'
+          ? 'border border-purple-500/20 bg-purple-500/5'
           : 'border border-transparent bg-white/[0.02]'
       }`}
     >
@@ -195,7 +186,7 @@ function RankRow({
         <Flame className="h-3.5 w-3.5 text-orange-400" />
         <span className="text-xs font-semibold text-orange-300">{entry.streak}</span>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -262,14 +253,14 @@ export function Leaderboard() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-xl bg-white/5 p-1 backdrop-blur-xl">
+      <div className="flex gap-1 rounded-xl bg-white/5 p-1">
         {TAB_KEYS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all ${
+            className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
               activeTab === tab
-                ? 'bg-purple-500/20 text-purple-300 shadow-[0_0_12px_rgba(139,92,246,0.2)]'
+                ? 'bg-purple-500/20 text-purple-300'
                 : 'text-slate-400 hover:text-slate-300 hover:bg-white/5'
             }`}
           >
@@ -284,7 +275,8 @@ export function Leaderboard() {
         <div className="lg:col-span-2 space-y-6">
           {/* Podium */}
           {top3.length > 0 && (
-            <GlowCard glowColor="purple" className="p-6">
+            <Card className="glass border-white/[0.06]">
+              <CardContent className="p-6">
               <div className="flex items-center justify-center gap-4 sm:gap-6">
                 {top3.length > 1 && (
                   <PodiumCard
@@ -308,11 +300,13 @@ export function Leaderboard() {
                   />
                 )}
               </div>
-            </GlowCard>
+              </CardContent>
+            </Card>
           )}
 
           {/* Full ranking list */}
-          <GlowCard glowColor="cyan" className="p-4">
+          <Card className="glass border-white/[0.06]">
+            <CardContent className="p-4">
             <h3 className="mb-3 flex items-center gap-2 text-lg font-bold text-white px-2">
               <TrendingUp className="h-5 w-5 text-cyan-400" />
               {t('leaderboard.ranking')}
@@ -325,14 +319,7 @@ export function Leaderboard() {
               </div>
             )}
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-1.5"
-              >
+              <div className="space-y-1.5">
                 {rest.map((entry) => (
                   <RankRow
                     key={entry.studentId}
@@ -340,14 +327,15 @@ export function Leaderboard() {
                     isCurrentUser={entry.studentId === currentUserId}
                   />
                 ))}
-              </motion.div>
-            </AnimatePresence>
-          </GlowCard>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Right 1/3: Your Stats */}
         <div className="space-y-6">
-          <GlowCard glowColor="gold" className="p-6">
+          <Card className="glass border-white/[0.06]">
+            <CardContent className="p-6">
             <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
               <Star className="h-5 w-5 text-amber-400" />
               {t('leaderboard.your_stats')}
@@ -399,12 +387,9 @@ export function Leaderboard() {
                     </span>
                   </div>
                   <div className="h-2.5 overflow-hidden rounded-full bg-white/5">
-                    <motion.div
-                      className="h-full rounded-full bg-gradient-to-r from-purple-500 via-cyan-400 to-purple-500"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${xpPercent}%` }}
-                      transition={{ duration: 1, ease: 'easeOut' }}
-                      style={{ boxShadow: '0 0 12px rgba(139,92,246,0.5)' }}
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-purple-500 to-cyan-400 transition-all duration-700"
+                      style={{ width: `${xpPercent}%` }}
                     />
                   </div>
                 </div>
@@ -414,7 +399,8 @@ export function Leaderboard() {
                 {t('leaderboard.no_data')}
               </div>
             )}
-          </GlowCard>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

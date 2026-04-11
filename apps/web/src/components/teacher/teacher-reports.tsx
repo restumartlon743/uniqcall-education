@@ -126,7 +126,7 @@ export function TeacherReports() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Class Progress Over Time */}
-        <Card className="glass border-purple-500/20 transition-all duration-300 hover:border-purple-500/40 hover:shadow-[0_0_20px_rgba(139,92,246,0.1)]">
+        <Card className="glass">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-cyan-400" />
@@ -183,7 +183,7 @@ export function TeacherReports() {
         </Card>
 
         {/* Archetype Distribution Pie */}
-        <Card className="glass border-purple-500/20 transition-all duration-300 hover:border-purple-500/40 hover:shadow-[0_0_20px_rgba(139,92,246,0.1)]">
+        <Card className="glass">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <PieChartIcon className="h-4 w-4 text-purple-400" />
@@ -227,7 +227,7 @@ export function TeacherReports() {
       {/* Lists Row */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Top Performing Students */}
-        <Card className="glass border-purple-500/20 transition-all duration-300 hover:border-purple-500/40 hover:shadow-[0_0_20px_rgba(139,92,246,0.1)]">
+        <Card className="glass">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Trophy className="h-4 w-4 text-amber-400" />
@@ -293,7 +293,7 @@ export function TeacherReports() {
         </Card>
 
         {/* Students Needing Intervention */}
-        <Card className="glass border-amber-500/15 transition-all duration-300 hover:border-amber-500/30 hover:shadow-[0_0_20px_rgba(245,158,11,0.1)]">
+        <Card className="glass">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-400" />

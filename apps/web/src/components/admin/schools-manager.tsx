@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useAdminSchools } from '@/hooks/use-supabase-data'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -27,9 +27,34 @@ import {
   Plus,
   Search,
   Pencil,
-  Building2,
   MapPin,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+  Inbox,
 } from 'lucide-react'
+import {
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  flexRender,
+  type ColumnDef,
+  type SortingState,
+} from '@tanstack/react-table'
+
+function SortHeader({ column, children }: { column: { getToggleSortingHandler: () => undefined | ((e: unknown) => void); getIsSorted: () => false | 'asc' | 'desc' }; children: React.ReactNode }) {
+  return (
+    <button
+      className="flex items-center gap-1 hover:text-white transition-colors"
+      onClick={column.getToggleSortingHandler()}
+    >
+      {children}
+      <ArrowUpDown className="h-3 w-3" />
+    </button>
+  )
+}
 
 export function SchoolsManager() {
   const { schools, loading } = useAdminSchools()
@@ -38,12 +63,7 @@ export function SchoolsManager() {
   const [editingSchool, setEditingSchool] = useState<Record<string, any> | null>(null)
   const [formName, setFormName] = useState('')
   const [formAddress, setFormAddress] = useState('')
-
-  const filtered = schools.filter(
-    (s) =>
-      (s.name || '').toLowerCase().includes(search.toLowerCase()) ||
-      (s.address || '').toLowerCase().includes(search.toLowerCase())
-  )
+  const [sorting, setSorting] = useState<SortingState>([])
 
   function openAdd() {
     setEditingSchool(null)
@@ -65,6 +85,83 @@ export function SchoolsManager() {
     setDialogOpen(false)
   }
 
+  const columns = useMemo<ColumnDef<Record<string, any>>[]>(
+    () => [
+      {
+        accessorKey: 'name',
+        header: ({ column }) => <SortHeader column={column}>Name</SortHeader>,
+        cell: ({ getValue }) => (
+          <span className="font-medium">{getValue() as string}</span>
+        ),
+      },
+      {
+        accessorKey: 'address',
+        header: 'Address',
+        cell: ({ getValue }) => (
+          <span className="flex items-center gap-1.5 text-sm text-slate-400">
+            <MapPin className="h-3.5 w-3.5 shrink-0" />
+            {getValue() as string}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'teacherCount',
+        header: ({ column }) => <SortHeader column={column}>Teachers</SortHeader>,
+        cell: ({ getValue }) => (
+          <Badge variant="logical">{getValue() as number}</Badge>
+        ),
+      },
+      {
+        accessorKey: 'studentCount',
+        header: ({ column }) => <SortHeader column={column}>Students</SortHeader>,
+        cell: ({ getValue }) => (
+          <Badge variant="creative">{getValue() as number}</Badge>
+        ),
+      },
+      {
+        accessorKey: 'createdAt',
+        header: ({ column }) => <SortHeader column={column}>Created</SortHeader>,
+        cell: ({ getValue }) => {
+          const val = getValue() as string | null
+          return (
+            <span className="text-sm text-slate-400">
+              {val ? new Date(val).toLocaleDateString() : 'N/A'}
+            </span>
+          )
+        },
+      },
+      {
+        id: 'actions',
+        header: () => <span className="sr-only">Actions</span>,
+        cell: ({ row }) => (
+          <div className="flex items-center justify-end">
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={() => openEdit(row.original)}
+            >
+              <Pencil className="h-3.5 w-3.5 text-slate-400" />
+            </Button>
+          </div>
+        ),
+        enableSorting: false,
+      },
+    ],
+    []
+  )
+
+  const table = useReactTable({
+    data: schools,
+    columns,
+    state: { sorting, globalFilter: search },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: { pagination: { pageSize: 10 } },
+  })
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -72,6 +169,8 @@ export function SchoolsManager() {
       </div>
     )
   }
+
+  const rows = table.getRowModel().rows
 
   return (
     <div className="space-y-6">
@@ -94,68 +193,79 @@ export function SchoolsManager() {
 
       {/* Table */}
       <Card className="glass">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-purple-400" />
-            Schools ({filtered.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Address</TableHead>
-                <TableHead>Teachers</TableHead>
-                <TableHead>Students</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((school) => (
-                <TableRow key={school.id}>
-                  <TableCell className="font-medium">{school.name}</TableCell>
-                  <TableCell>
-                    <span className="flex items-center gap-1.5 text-sm text-slate-400">
-                      <MapPin className="h-3.5 w-3.5" />
-                      {school.address}
+        <CardContent className="pt-4">
+          {schools.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-slate-500">
+              <Inbox className="h-8 w-8 mb-2" />
+              <p className="text-sm">No schools yet.</p>
+            </div>
+          ) : (
+            <div>
+              <Table>
+                <TableHeader>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(header.column.columnDef.header, header.getContext())}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {rows.length > 0 ? (
+                    rows.map((row) => (
+                      <TableRow key={row.id}>
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} className="text-center text-slate-500 py-8">
+                        No results match your search.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+
+              {table.getPageCount() > 1 && (
+                <div className="flex items-center justify-between border-t border-white/[0.06] px-3 pt-3 mt-2">
+                  <p className="text-xs text-slate-500">
+                    {table.getFilteredRowModel().rows.length} total
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={() => table.previousPage()}
+                      disabled={!table.getCanPreviousPage()}
+                    >
+                      <ChevronLeft className="h-3.5 w-3.5" />
+                    </Button>
+                    <span className="px-2 text-xs text-slate-400">
+                      {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
                     </span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="logical">{school.teacherCount}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="creative">{school.studentCount}</Badge>
-                  </TableCell>
-                  <TableCell className="text-sm text-slate-400">
-                    {school.createdAt ? new Date(school.createdAt).toLocaleDateString() : 'N/A'}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon-xs"
-                        onClick={() => openEdit(school)}
-                      >
-                        <Pencil className="h-3.5 w-3.5 text-slate-400" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filtered.length === 0 && (
-                <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="text-center text-slate-400"
-                  >
-                    No schools found.
-                  </TableCell>
-                </TableRow>
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={() => table.nextPage()}
+                      disabled={!table.getCanNextPage()}
+                    >
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
               )}
-            </TableBody>
-          </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
 

@@ -7,6 +7,8 @@ import {
   Flower2,
   ArrowRight,
   Star,
+  Check,
+  X,
   Droplets,
   Sun,
   Leaf,
@@ -369,7 +371,7 @@ export default function WellnessGarden({
                         <span className={cn('w-28', res.color)}>{res.label}:</span>
                         <span className="text-white/60">You: {actual}</span>
                         <span className={cn(diff <= 1 ? 'text-emerald-400' : diff <= 2 ? 'text-yellow-400' : 'text-red-400')}>
-                          {diff === 0 ? '✓ Perfect' : diff <= 1 ? '~ Close' : `✗ Ideal: ${ideal}`}
+                          {diff === 0 ? <><Check className="mr-0.5 inline h-3 w-3" />Perfect</> : diff <= 1 ? '~ Close' : <><X className="mr-0.5 inline h-3 w-3" />Ideal: {ideal}</>}
                         </span>
                       </div>
                     )

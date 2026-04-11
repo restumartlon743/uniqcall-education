@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils'
 import {
   Search,
   ArrowRight,
+  Check,
+  X,
   CheckCircle2,
   Star,
   FlaskConical,
@@ -442,8 +444,8 @@ export default function MysteryLab({
               <span className="text-xs text-white/60">Case {i + 1}: {mysteries[i]?.title}</span>
               <div className="flex gap-3 text-xs">
                 <span className="text-cyan-300">Tests: {s.tests}</span>
-                <span className="text-purple-300">Hyp: {s.hypothesis > 0 ? '✓' : '✗'}</span>
-                <span className="text-pink-300">Con: {s.conclusion > 0 ? '✓' : '✗'}</span>
+                <span className="text-purple-300">Hyp: {s.hypothesis > 0 ? <Check className="inline h-3 w-3" /> : <X className="inline h-3 w-3" />}</span>
+                <span className="text-pink-300">Con: {s.conclusion > 0 ? <Check className="inline h-3 w-3" /> : <X className="inline h-3 w-3" />}</span>
                 <span className="font-bold text-amber-400">{s.total} pts</span>
               </div>
             </div>
@@ -662,13 +664,13 @@ export default function MysteryLab({
                   <div className="flex items-center justify-between">
                     <span className="text-white/60">Hypothesis</span>
                     <span className={cn(mysteryScores[mysteryScores.length - 1].hypothesis > 0 ? 'text-emerald-400' : 'text-red-400')}>
-                      {mysteryScores[mysteryScores.length - 1].hypothesis > 0 ? '✓ Correct' : '✗ Wrong'}
+                      {mysteryScores[mysteryScores.length - 1].hypothesis > 0 ? <><Check className="mr-0.5 inline h-3 w-3" />Correct</> : <><X className="mr-0.5 inline h-3 w-3" />Wrong</>}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-white/60">Conclusion</span>
                     <span className={cn(mysteryScores[mysteryScores.length - 1].conclusion > 0 ? 'text-emerald-400' : 'text-red-400')}>
-                      {mysteryScores[mysteryScores.length - 1].conclusion > 0 ? '✓ Correct' : '✗ Wrong'}
+                      {mysteryScores[mysteryScores.length - 1].conclusion > 0 ? <><Check className="mr-0.5 inline h-3 w-3" />Correct</> : <><X className="mr-0.5 inline h-3 w-3" />Wrong</>}
                     </span>
                   </div>
                 </div>

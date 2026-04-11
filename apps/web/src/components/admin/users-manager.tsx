@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   useAdminTeachers,
   useAdminStudents,
   useAdminParents,
 } from '@/hooks/use-supabase-data'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -36,7 +36,21 @@ import {
   GraduationCap,
   Users,
   UserCheck,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+  Inbox,
 } from 'lucide-react'
+import {
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  flexRender,
+  type ColumnDef,
+  type SortingState,
+} from '@tanstack/react-table'
 
 function getAssessmentBadge(status: string) {
   switch (status) {
@@ -60,6 +74,127 @@ function getOnboardingBadge(status: string) {
   }
 }
 
+function SortHeader({ column, children }: { column: { getToggleSortingHandler: () => undefined | ((e: unknown) => void); getIsSorted: () => false | 'asc' | 'desc' }; children: React.ReactNode }) {
+  return (
+    <button
+      className="flex items-center gap-1 hover:text-white transition-colors"
+      onClick={column.getToggleSortingHandler()}
+    >
+      {children}
+      <ArrowUpDown className="h-3 w-3" />
+    </button>
+  )
+}
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-12 text-slate-500">
+      <Inbox className="h-8 w-8 mb-2" />
+      <p className="text-sm">{message}</p>
+    </div>
+  )
+}
+
+function DataTable<T>({
+  data,
+  columns,
+  globalFilter,
+  pageSize = 10,
+}: {
+  data: T[]
+  columns: ColumnDef<T, unknown>[]
+  globalFilter: string
+  pageSize?: number
+}) {
+  const [sorting, setSorting] = useState<SortingState>([])
+
+  const table = useReactTable({
+    data,
+    columns,
+    state: { sorting, globalFilter },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: { pagination: { pageSize } },
+  })
+
+  const rows = table.getRowModel().rows
+
+  if (data.length === 0) {
+    return <EmptyState message="No data available." />
+  }
+
+  return (
+    <div>
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(header.column.columnDef.header, header.getContext())}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {rows.length > 0 ? (
+            rows.map((row) => (
+              <TableRow key={row.id}>
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="text-center text-slate-500 py-8">
+                No results match your search.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+
+      {table.getPageCount() > 1 && (
+        <div className="flex items-center justify-between border-t border-white/[0.06] px-3 pt-3 mt-2">
+          <p className="text-xs text-slate-500">
+            {table.getFilteredRowModel().rows.length} total
+          </p>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </Button>
+            <span className="px-2 text-xs text-slate-400">
+              {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function UsersManager() {
   const [search, setSearch] = useState('')
   const [addDialogOpen, setAddDialogOpen] = useState(false)
@@ -75,27 +210,142 @@ export function UsersManager() {
   const { students, loading: studentsLoading } = useAdminStudents()
   const { parents, loading: parentsLoading } = useAdminParents()
 
-  const filteredTeachers = teachers.filter(
-    (t) =>
-      (t.name || '').toLowerCase().includes(search.toLowerCase()) ||
-      (t.specialization || '').toLowerCase().includes(search.toLowerCase()) ||
-      (t.employee_id || '').toLowerCase().includes(search.toLowerCase())
+  const teacherColumns = useMemo<ColumnDef<Record<string, any>>[]>(
+    () => [
+      {
+        accessorKey: 'name',
+        header: ({ column }) => <SortHeader column={column}>Name</SortHeader>,
+        cell: ({ getValue }) => (
+          <span className="font-medium">{getValue() as string}</span>
+        ),
+      },
+      {
+        accessorKey: 'specialization',
+        header: ({ column }) => <SortHeader column={column}>Specialization</SortHeader>,
+        cell: ({ getValue }) => {
+          const val = getValue() as string
+          return val ? (
+            <span className="text-sm text-slate-300">{val}</span>
+          ) : (
+            <span className="text-xs text-slate-500">N/A</span>
+          )
+        },
+      },
+      {
+        accessorKey: 'employee_id',
+        header: 'Employee ID',
+        cell: ({ getValue }) => {
+          const val = getValue() as string
+          return val ? (
+            <span className="text-sm text-slate-400">{val}</span>
+          ) : (
+            <span className="text-xs text-slate-500">N/A</span>
+          )
+        },
+      },
+    ],
+    []
   )
 
-  const filteredStudents = students.filter(
-    (s) =>
-      (s.name || '').toLowerCase().includes(search.toLowerCase()) ||
-      (s.schoolName || '').toLowerCase().includes(search.toLowerCase()) ||
-      (s.className || '').toLowerCase().includes(search.toLowerCase())
+  const studentColumns = useMemo<ColumnDef<Record<string, any>>[]>(
+    () => [
+      {
+        accessorKey: 'name',
+        header: ({ column }) => <SortHeader column={column}>Name</SortHeader>,
+        cell: ({ getValue }) => (
+          <span className="font-medium">{getValue() as string}</span>
+        ),
+      },
+      {
+        accessorKey: 'schoolName',
+        header: ({ column }) => <SortHeader column={column}>School</SortHeader>,
+        cell: ({ getValue }) => (
+          <span className="text-sm text-slate-300">{getValue() as string}</span>
+        ),
+      },
+      {
+        accessorKey: 'className',
+        header: 'Class',
+        cell: ({ getValue }) => (
+          <span className="text-sm text-slate-300">{getValue() as string}</span>
+        ),
+      },
+      {
+        accessorKey: 'archetype',
+        header: 'Archetype',
+        cell: ({ getValue }) => {
+          const val = getValue() as string | null
+          return val ? (
+            <Badge
+              variant={
+                val.toLowerCase() as
+                  | 'thinker'
+                  | 'creator'
+                  | 'engineer'
+                  | 'storyteller'
+              }
+            >
+              {val}
+            </Badge>
+          ) : (
+            <span className="text-xs text-slate-500">Not assessed</span>
+          )
+        },
+      },
+      {
+        accessorKey: 'assessmentStatus',
+        header: 'Assessment',
+        cell: ({ getValue }) => getAssessmentBadge(getValue() as string),
+      },
+      {
+        accessorKey: 'onboardingStatus',
+        header: 'Onboarding',
+        cell: ({ getValue }) => getOnboardingBadge(getValue() as string),
+      },
+    ],
+    []
   )
 
-  const filteredParents = parents.filter(
-    (p) =>
-      (p.name || '').toLowerCase().includes(search.toLowerCase()) ||
-      (p.phone || '').toLowerCase().includes(search.toLowerCase()) ||
-      (p.linkedChildren || []).some((c: string) =>
-        c.toLowerCase().includes(search.toLowerCase())
-      )
+  const parentColumns = useMemo<ColumnDef<Record<string, any>>[]>(
+    () => [
+      {
+        accessorKey: 'name',
+        header: ({ column }) => <SortHeader column={column}>Name</SortHeader>,
+        cell: ({ getValue }) => (
+          <span className="font-medium">{getValue() as string}</span>
+        ),
+      },
+      {
+        accessorKey: 'phone',
+        header: 'Phone',
+        cell: ({ getValue }) => {
+          const val = getValue() as string
+          return val ? (
+            <span className="text-sm text-slate-400">{val}</span>
+          ) : (
+            <span className="text-xs text-slate-500">N/A</span>
+          )
+        },
+      },
+      {
+        accessorKey: 'linkedChildren',
+        header: 'Linked Children',
+        cell: ({ getValue }) => {
+          const children = getValue() as string[]
+          return children.length > 0 ? (
+            <div className="flex flex-wrap gap-1">
+              {children.map((child) => (
+                <Badge key={child} variant="social">{child}</Badge>
+              ))}
+            </div>
+          ) : (
+            <span className="text-xs text-slate-500">No children linked</span>
+          )
+        },
+        enableSorting: false,
+      },
+    ],
+    []
   )
 
   function openAddTeacher() {
@@ -136,15 +386,15 @@ export function UsersManager() {
         <TabsList>
           <TabsTrigger value="teachers" className="gap-1.5">
             <GraduationCap className="h-4 w-4" />
-            Teachers ({filteredTeachers.length})
+            Teachers ({teachers.length})
           </TabsTrigger>
           <TabsTrigger value="students" className="gap-1.5">
             <Users className="h-4 w-4" />
-            Students ({filteredStudents.length})
+            Students ({students.length})
           </TabsTrigger>
           <TabsTrigger value="parents" className="gap-1.5">
             <UserCheck className="h-4 w-4" />
-            Parents ({filteredParents.length})
+            Parents ({parents.length})
           </TabsTrigger>
         </TabsList>
 
@@ -155,48 +405,15 @@ export function UsersManager() {
               <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
             </div>
           ) : (
-          <Card className="glass">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <GraduationCap className="h-5 w-5 text-purple-400" />
-                Teachers
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Specialization</TableHead>
-                    <TableHead>Employee ID</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredTeachers.map((t) => (
-                    <TableRow key={t.id}>
-                      <TableCell className="font-medium">{t.name}</TableCell>
-                      <TableCell className="text-sm text-slate-300">
-                        {t.specialization || <span className="text-xs text-slate-500">N/A</span>}
-                      </TableCell>
-                      <TableCell className="text-sm text-slate-400">
-                        {t.employee_id || <span className="text-xs text-slate-500">N/A</span>}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {filteredTeachers.length === 0 && (
-                    <TableRow>
-                      <TableCell
-                        colSpan={3}
-                        className="text-center text-slate-400"
-                      >
-                        No teachers found.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+            <Card className="glass">
+              <CardContent className="pt-4">
+                <DataTable
+                  data={teachers}
+                  columns={teacherColumns}
+                  globalFilter={search}
+                />
+              </CardContent>
+            </Card>
           )}
         </TabsContent>
 
@@ -207,76 +424,15 @@ export function UsersManager() {
               <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
             </div>
           ) : (
-          <Card className="glass">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-cyan-400" />
-                Students
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>School</TableHead>
-                    <TableHead>Class</TableHead>
-                    <TableHead>Archetype</TableHead>
-                    <TableHead>Assessment</TableHead>
-                    <TableHead>Onboarding</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredStudents.map((s) => (
-                    <TableRow key={s.id}>
-                      <TableCell className="font-medium">{s.name}</TableCell>
-                      <TableCell className="text-sm text-slate-300">
-                        {s.schoolName}
-                      </TableCell>
-                      <TableCell className="text-sm text-slate-300">
-                        {s.className}
-                      </TableCell>
-                      <TableCell>
-                        {s.archetype ? (
-                          <Badge
-                            variant={
-                              (s.archetype as string).toLowerCase() as
-                                | 'thinker'
-                                | 'creator'
-                                | 'engineer'
-                                | 'storyteller'
-                            }
-                          >
-                            {s.archetype}
-                          </Badge>
-                        ) : (
-                          <span className="text-xs text-slate-500">
-                            Not assessed
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {getAssessmentBadge(s.assessmentStatus)}
-                      </TableCell>
-                      <TableCell>
-                        {getOnboardingBadge(s.onboardingStatus)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {filteredStudents.length === 0 && (
-                    <TableRow>
-                      <TableCell
-                        colSpan={6}
-                        className="text-center text-slate-400"
-                      >
-                        No students found.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+            <Card className="glass">
+              <CardContent className="pt-4">
+                <DataTable
+                  data={students}
+                  columns={studentColumns}
+                  globalFilter={search}
+                />
+              </CardContent>
+            </Card>
           )}
         </TabsContent>
 
@@ -287,60 +443,15 @@ export function UsersManager() {
               <div className="animate-spin h-8 w-8 border-2 border-purple-500 border-t-transparent rounded-full" />
             </div>
           ) : (
-          <Card className="glass">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UserCheck className="h-5 w-5 text-amber-400" />
-                Parents
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Linked Children</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredParents.map((p) => (
-                    <TableRow key={p.id}>
-                      <TableCell className="font-medium">{p.name}</TableCell>
-                      <TableCell className="text-sm text-slate-400">
-                        {p.phone || <span className="text-xs text-slate-500">N/A</span>}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {(p.linkedChildren || []).length > 0 ? (
-                            p.linkedChildren.map((child: string) => (
-                              <Badge key={child} variant="social">
-                                {child}
-                              </Badge>
-                            ))
-                          ) : (
-                            <span className="text-xs text-slate-500">
-                              No children linked
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {filteredParents.length === 0 && (
-                    <TableRow>
-                      <TableCell
-                        colSpan={3}
-                        className="text-center text-slate-400"
-                      >
-                        No parents found.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+            <Card className="glass">
+              <CardContent className="pt-4">
+                <DataTable
+                  data={parents}
+                  columns={parentColumns}
+                  globalFilter={search}
+                />
+              </CardContent>
+            </Card>
           )}
         </TabsContent>
       </Tabs>
@@ -403,7 +514,7 @@ export function UsersManager() {
               </div>
             </>
           ) : (
-            <div className="rounded-lg border border-cyan-500/20 bg-cyan-500/10 p-4">
+            <div className="rounded-lg border-l-2 border-l-cyan-500 border border-white/[0.06] bg-white/[0.02] p-4">
               <p className="text-sm text-cyan-300">
                 An invite code will be generated for the parent. They can use
                 this code to sign up and link to their child&apos;s account.

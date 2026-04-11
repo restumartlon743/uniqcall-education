@@ -19,7 +19,6 @@ import {
   Bell,
   AlertCircle,
   Star,
-  Sparkles,
   Smile,
   Lightbulb,
   Users,
@@ -91,7 +90,7 @@ export function ParentDashboard() {
       {/* Main Grid: Child Profile + Highlights + Growth */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Section A: Child Profile Header */}
-        <Card className="glass card-glow-hover col-span-1 lg:col-span-4">
+        <Card className="glass border-white/[0.06] col-span-1 lg:col-span-4">
           <CardContent className="flex flex-col items-center p-6">
             {/* 3D Avatar */}
             <div className="relative mb-2 h-40 w-32 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1a1040]/30 to-[#0d1530]/30">
@@ -114,7 +113,6 @@ export function ParentDashboard() {
               variant={child.archetype.code.toLowerCase() as never}
               className="mt-2"
             >
-              <Sparkles className="mr-1 h-3 w-3" />
               {child.archetype.name}
             </Badge>
 
@@ -161,7 +159,7 @@ export function ParentDashboard() {
           </div>
 
           {/* Section C: Growth Snapshot */}
-          <Card className="glass border-purple-500/20 transition-all duration-300 hover:border-purple-500/40 hover:shadow-[0_0_20px_rgba(139,92,246,0.1)]">
+          <Card className="glass border-white/[0.06]">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -183,7 +181,7 @@ export function ParentDashboard() {
       </div>
 
       {/* Section D: Interaction — High Five */}
-      <Card className="glass card-glow-hover overflow-hidden">
+      <Card className="glass border-white/[0.06] overflow-hidden">
         <CardContent className="flex flex-col items-center gap-4 p-8 sm:flex-row sm:justify-between">
           <div>
             <h3 className="flex items-center gap-2 text-lg font-semibold text-white">
@@ -198,23 +196,23 @@ export function ParentDashboard() {
             onClick={handleHighFive}
             disabled={highFiveSent}
             className={cn(
-              'relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-300',
+              'relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
               highFiveSent
-                ? 'border-emerald-400 bg-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.4)]'
-                : 'border-purple-500/50 bg-purple-500/10 shadow-[0_0_25px_rgba(139,92,246,0.3)] hover:scale-110 hover:border-cyan-400 hover:bg-cyan-500/10 hover:shadow-[0_0_35px_rgba(6,182,212,0.4)]'
+                ? 'border-emerald-400 bg-emerald-500/20'
+                : 'border-purple-500/30 bg-purple-500/10 hover:border-cyan-400 hover:bg-cyan-500/10'
             )}
           >
             <Hand
               className={cn(
-                'h-8 w-8 transition-all duration-300',
+                'h-7 w-7 transition-colors',
                 highFiveSent
-                  ? 'scale-125 text-emerald-400'
+                  ? 'text-emerald-400'
                   : 'text-purple-400'
               )}
             />
             {highFiveSent && (
               <span className="absolute -top-8 flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-medium text-emerald-300">
-                High Five Sent! <Sparkles className="h-3 w-3 text-yellow-400" />
+                High Five Sent!
               </span>
             )}
           </button>
@@ -222,7 +220,7 @@ export function ParentDashboard() {
       </Card>
 
       {/* Weekly Report Summary */}
-      <Card className="glass border-purple-500/20 transition-all duration-300 hover:border-purple-500/40 hover:shadow-[0_0_20px_rgba(139,92,246,0.1)]">
+      <Card className="glass border-white/[0.06]">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Star className="h-5 w-5 text-amber-400" />

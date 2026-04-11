@@ -287,7 +287,7 @@ export function ParentGrowth() {
             return (
               <div
                 key={badge.id}
-                className="glass group flex flex-col items-center gap-2 rounded-xl p-4 transition-all hover:scale-105 hover:border-amber-500/30 hover:shadow-[0_0_20px_rgba(245,158,11,0.2)]"
+                className="glass flex flex-col items-center gap-2 rounded-xl border-white/[0.06] p-4"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/15">
                   <Icon className="h-6 w-6 text-amber-400" />

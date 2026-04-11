@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils'
 import {
   Languages,
   ArrowRight,
+  Check,
+  X,
   CheckCircle2,
   XCircle,
   Star,
@@ -319,7 +321,7 @@ export default function TranslationChallenge({
               i > index && 'border-white/10 bg-white/5 text-white/20',
             )}
           >
-            {i < results.length ? (results[i] ? '✓' : '✗') : i + 1}
+            {i < results.length ? (results[i] ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />) : i + 1}
           </div>
         ))}
       </div>

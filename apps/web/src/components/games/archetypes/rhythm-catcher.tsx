@@ -10,6 +10,7 @@ import {
   Flame,
   Target,
   ThumbsUp,
+  X,
 } from 'lucide-react'
 import type { GameDifficulty } from '@/lib/game-data'
 
@@ -280,7 +281,7 @@ export default function RhythmCatcher({
             <div className="flex gap-2 text-[10px]">
               <span className="text-amber-400"><Star className="mr-0.5 inline h-3 w-3" /> {perfectCount}</span>
               <span className="text-cyan-400"><ThumbsUp className="mr-0.5 inline h-3 w-3" /> {goodCount}</span>
-              <span className="text-red-400">✕ {missCount}</span>
+              <span className="text-red-400"><X className="mr-0.5 inline h-3 w-3" />{missCount}</span>
             </div>
           </div>
 
@@ -429,7 +430,7 @@ export default function RhythmCatcher({
             </div>
             <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-3">
               <p className="text-white/40">Miss</p>
-              <p className="text-lg font-bold text-red-400">✕ {missCount}</p>
+              <p className="text-lg font-bold text-red-400"><X className="mr-1 inline h-5 w-5" />{missCount}</p>
             </div>
             <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 p-3">
               <p className="text-white/40">Max Combo</p>

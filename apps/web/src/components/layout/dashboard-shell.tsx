@@ -133,7 +133,7 @@ export function DashboardShell({
           userName={userName}
           avatarUrl={avatarUrl}
         />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6 lg:p-8">{children}</main>
       </div>
     </div>
   )

@@ -148,7 +148,7 @@ const HARD_PUZZLES: PuzzleTemplate[] = [
       'All integers are rational numbers. (Given) → 7 is rational.',
       'All rational numbers are real numbers. (Given)',
       '7 is rational → 7 is a real number. (Syllogism)',
-      'Therefore, 7 is a real number. ✓',
+      'Therefore, 7 is a real number. (QED)',
     ],
     distractors: [
       'π is a real number. (True but irrelevant)',

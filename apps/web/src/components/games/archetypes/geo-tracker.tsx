@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils'
 import {
   Map,
   ArrowRight,
+  Check,
+  X,
   CheckCircle2,
   Star,
   Compass,
@@ -351,7 +353,7 @@ export default function GeoTracker({
             <div key={i} className="flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-2">
               <span className="text-xs text-white/60">Hunt {i + 1}: {hunts[i]?.name}</span>
               <div className="flex gap-3 text-xs">
-                <span className={cn(s.found ? 'text-emerald-300' : 'text-red-400')}>{s.found ? '✓ Found' : '✗ Missed'}</span>
+                <span className={cn(s.found ? 'text-emerald-300' : 'text-red-400')}>{s.found ? <><Check className="mr-0.5 inline h-3 w-3" />Found</> : <><X className="mr-0.5 inline h-3 w-3" />Missed</>}</span>
                 <span className="text-cyan-300">Moves: {s.moves}</span>
                 <span className="font-bold text-amber-400">{s.score} pts</span>
               </div>

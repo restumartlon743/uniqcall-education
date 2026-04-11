@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils'
 import {
   Globe,
   ArrowRight,
+  Check,
+  X,
   CheckCircle2,
   XCircle,
   Star,
@@ -194,7 +196,7 @@ export default function CultureBridge({
               i > index && 'border-white/10 bg-white/5 text-white/20',
             )}
           >
-            {i < results.length ? (results[i].correct ? '✓' : '✗') : i + 1}
+            {i < results.length ? (results[i].correct ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />) : i + 1}
           </div>
         ))}
       </div>

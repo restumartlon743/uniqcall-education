@@ -17,10 +17,8 @@ import {
   Swords,
   BookOpen,
   UsersRound,
-  Sparkles,
   ChevronRight,
 } from 'lucide-react'
-import { motion } from 'framer-motion'
 import {
   Radar,
   RadarChart,
@@ -29,7 +27,7 @@ import {
   PolarRadiusAxis,
   ResponsiveContainer,
 } from 'recharts'
-import { GlowCard } from '@/components/effects/glow-card'
+import { Card, CardContent } from '@/components/ui/card'
 import { ArchetypeAvatar } from '@/components/effects/archetype-avatar'
 import { ARCHETYPE_COLORS } from '@/lib/mock-data'
 import {
@@ -59,15 +57,6 @@ const MISSION_ICONS: Record<string, React.ReactNode> = {
   game: <Swords className="h-4 w-4" />,
   learn: <BookOpen className="h-4 w-4" />,
   group: <UsersRound className="h-4 w-4" />,
-}
-
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.08 } },
-}
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 }
 
 export function StudentDashboard() {
@@ -146,24 +135,17 @@ export function StudentDashboard() {
   const topSkills = [...radarData].sort((a, b) => b.value - a.value).slice(0, 3)
 
   return (
-    <motion.div
-      variants={stagger}
-      initial="hidden"
-      animate="show"
-      className="space-y-6"
-    >
+    <div className="space-y-6">
       {/* ── Top row: Avatar | Radar | Badges ── */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* ── Left: Avatar & Stats ── */}
-        <motion.div variants={fadeUp}>
-          <GlowCard glowColor="purple" className="relative h-full p-6">
+        <Card className="glass border-white/[0.06] h-full">
+          <CardContent className="p-6">
             {/* Avatar area */}
             <div className="relative mx-auto mb-5 flex items-center justify-center">
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-600/20 to-cyan-600/20 blur-2xl" />
-              <div className="relative overflow-hidden rounded-2xl border-2 border-purple-500/30 bg-gradient-to-br from-[#1a1040]/50 to-[#0d1530]/50 p-2">
+              <div className="relative overflow-hidden rounded-2xl border border-purple-500/20 bg-gradient-to-br from-[#1a1040]/50 to-[#0d1530]/50 p-2">
                 <ArchetypeAvatar archetypeCode={student.archetype.code} gender="male" size="lg" />
-                {/* Level badge */}
-                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full border border-purple-500/50 bg-[#151B3B] px-3 py-0.5 text-xs font-bold text-purple-300">
+                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full border border-purple-500/30 bg-[#151B3B] px-3 py-0.5 text-xs font-bold text-purple-300">
                   LVL {student.level}
                 </div>
               </div>
@@ -200,36 +182,26 @@ export function StudentDashboard() {
                 </span>
               </div>
               <div className="h-2.5 overflow-hidden rounded-full bg-white/5">
-                <motion.div
-                  className="h-full rounded-full bg-gradient-to-r from-purple-500 via-cyan-400 to-purple-500"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${xpPercent}%` }}
-                  transition={{ duration: 1, ease: 'easeOut' }}
-                  style={{
-                    boxShadow: '0 0 12px rgba(139,92,246,0.5)',
-                  }}
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-purple-500 to-cyan-400 transition-all duration-700"
+                  style={{ width: `${xpPercent}%` }}
                 />
               </div>
             </div>
 
-            {/* Streak & Mood row */}
             <div className="mt-4 flex items-center justify-between rounded-lg bg-white/5 px-4 py-2.5">
               <div className="flex items-center gap-2">
                 <Flame className="h-4 w-4 text-orange-400" />
                 <span className="text-sm font-semibold text-white">{student.streak}</span>
                 <span className="text-xs text-slate-400">day streak</span>
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-cyan-400">
-                <Sparkles className="h-4 w-4" />
-                <span className="capitalize">Active</span>
-              </div>
             </div>
-          </GlowCard>
-        </motion.div>
+          </CardContent>
+        </Card>
 
         {/* ── Center: Cognitive Radar ── */}
-        <motion.div variants={fadeUp}>
-          <GlowCard glowColor="cyan" className="h-full p-6">
+        <Card className="glass border-white/[0.06] h-full">
+          <CardContent className="p-6">
             <h3 className="mb-1 text-lg font-bold text-white">Cognitive Skills</h3>
             <p className="mb-2 text-xs text-slate-400">Your 7-parameter cognitive profile</p>
 
@@ -270,19 +242,19 @@ export function StudentDashboard() {
                 {topSkills.map((s) => (
                   <span
                     key={s.param}
-                    className="rounded-full border border-purple-500/30 bg-purple-500/10 px-2.5 py-0.5 text-xs font-medium text-purple-300"
+                    className="rounded-full border border-purple-500/20 bg-purple-500/10 px-2.5 py-0.5 text-xs font-medium text-purple-300"
                   >
                     {s.param} {s.value}%
                   </span>
                 ))}
               </div>
             </div>
-          </GlowCard>
-        </motion.div>
+          </CardContent>
+        </Card>
 
         {/* ── Right: Badges ── */}
-        <motion.div variants={fadeUp}>
-          <GlowCard glowColor="gold" className="h-full p-6">
+        <Card className="glass border-white/[0.06] h-full">
+          <CardContent className="p-6">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-bold text-white">Badges</h3>
               <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-400">
@@ -306,11 +278,6 @@ export function StudentDashboard() {
                         ? 'bg-gradient-to-br from-amber-500/20 to-purple-500/20 text-amber-400'
                         : 'bg-white/5 text-slate-600'
                     }`}
-                    style={
-                      badge.unlocked
-                        ? { boxShadow: '0 0 12px rgba(245,158,11,0.2)' }
-                        : undefined
-                    }
                   >
                     {badge.unlocked ? (
                       BADGE_ICONS[badge.icon] ?? <Star className="h-5 w-5" />
@@ -339,22 +306,19 @@ export function StudentDashboard() {
                 <span className="font-mono text-amber-400">{xpPercent}%</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-white/5">
-                <motion.div
-                  className="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${xpPercent}%` }}
-                  transition={{ duration: 1.2, ease: 'easeOut' }}
-                  style={{ boxShadow: '0 0 10px rgba(245,158,11,0.4)' }}
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400 transition-all duration-700"
+                  style={{ width: `${xpPercent}%` }}
                 />
               </div>
             </div>
-          </GlowCard>
-        </motion.div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* ── Mini Leaderboard: Top 5 ── */}
-      <motion.div variants={fadeUp}>
-        <GlowCard glowColor="purple" className="p-6">
+      <Card className="glass border-white/[0.06]">
+        <CardContent className="p-6">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-purple-400" />
@@ -375,10 +339,10 @@ export function StudentDashboard() {
               return (
                 <div
                   key={entry.studentId}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 ${
                     isMe
                       ? 'border border-purple-500/20 bg-purple-500/5'
-                      : 'bg-white/[0.02] hover:bg-white/5'
+                      : 'bg-white/[0.02]'
                   }`}
                 >
                   <div
@@ -408,14 +372,14 @@ export function StudentDashboard() {
               <p className="py-4 text-center text-xs text-slate-500">No leaderboard data yet</p>
             )}
           </div>
-        </GlowCard>
-      </motion.div>
+        </CardContent>
+      </Card>
 
       {/* ── Bottom row: Missions | Quest preview ── */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Daily Missions */}
-        <motion.div variants={fadeUp}>
-          <GlowCard glowColor="cyan" className="p-6">
+        <Card className="glass border-white/[0.06]">
+          <CardContent className="p-6">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-bold text-white">Daily Missions</h3>
               <span className="text-xs text-slate-400">
@@ -427,10 +391,10 @@ export function StudentDashboard() {
               {missions.map((mission) => (
                 <div
                   key={mission.id}
-                  className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${
+                  className={`flex items-center gap-3 rounded-lg px-4 py-3 ${
                     mission.completed
                       ? 'bg-green-500/5 border border-green-500/10'
-                      : 'bg-white/5 border border-white/5 hover:border-cyan-500/20'
+                      : 'bg-white/5 border border-white/[0.06]'
                   }`}
                 >
                   <div
@@ -471,12 +435,12 @@ export function StudentDashboard() {
                 </div>
               ))}
             </div>
-          </GlowCard>
-        </motion.div>
+          </CardContent>
+        </Card>
 
         {/* Quest Journey preview */}
-        <motion.div variants={fadeUp}>
-          <GlowCard glowColor="purple" className="relative overflow-hidden p-6">
+        <Card className="glass border-white/[0.06] overflow-hidden">
+          <CardContent className="p-6">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-bold text-white">Career Quest Journey</h3>
               <Link
@@ -526,7 +490,7 @@ export function StudentDashboard() {
                         node.completed
                           ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300'
                           : isCurrent
-                            ? 'border-purple-400 bg-purple-500/20 text-purple-300 animate-glow-pulse'
+                            ? 'border-purple-400 bg-purple-500/20 text-purple-300'
                             : 'border-slate-600 bg-slate-800 text-slate-600'
                       }`}
                     >
@@ -547,9 +511,9 @@ export function StudentDashboard() {
               Quest {questNodes.filter((n) => n.completed).length}/{questNodes.length} &middot;
               Next: {questNodes.find((n) => 'current' in n && n.current)?.title ?? 'Complete'}
             </p>
-          </GlowCard>
-        </motion.div>
+          </CardContent>
+        </Card>
       </div>
-    </motion.div>
+    </div>
   )
 }
