@@ -5,7 +5,7 @@ services:
     region: singapore
     plan: free
     repo: https://github.com/restumartlon743/uniqcall-education.git
-    buildCommand: npm install && npx turbo build --filter=web
+    buildCommand: npm install && npx turbo build --filter=@uniqcall/web
     startCommand: npm run start --workspace=apps/web
     envVars:
       - key: NODE_ENV
