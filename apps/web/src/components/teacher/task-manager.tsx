@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import {
   useCurrentUser,
   useTeacherTasks,
+  useTeacherClasses,
 } from '@/hooks/use-supabase-data'
 import type { TaskData } from '@/hooks/use-supabase-data'
 import { Card, CardContent } from '@/components/ui/card'
@@ -39,8 +40,11 @@ function getDueBadge(dateStr: string) {
 
 export function TaskManager() {
   const { user, loading: userLoading } = useCurrentUser()
-  const { tasks, loading: tasksLoading } = useTeacherTasks(user?.id ?? '')
-  const loading = userLoading || tasksLoading
+  const { tasks, loading: tasksLoading, refetch: refetchTasks } = useTeacherTasks(user?.id ?? '')
+  const { classes, loading: classesLoading } = useTeacherClasses(user?.id ?? '')
+  const loading = userLoading || tasksLoading || classesLoading
+
+  const dialogClasses = classes.map((c: Record<string, any>) => ({ id: c.id as string, name: c.name as string }))
 
   const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -72,7 +76,13 @@ export function TaskManager() {
           <FileText className="h-12 w-12 mb-4 opacity-50" />
           <p>Create your first task to get started</p>
         </div>
-        <CreateTaskDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+        <CreateTaskDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          teacherId={user?.id ?? ''}
+          classes={dialogClasses}
+          onCreated={refetchTasks}
+        />
       </div>
     )
   }
@@ -104,7 +114,13 @@ export function TaskManager() {
         ))}
       </div>
 
-      <CreateTaskDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <CreateTaskDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        teacherId={user?.id ?? ''}
+        classes={dialogClasses}
+        onCreated={refetchTasks}
+      />
     </div>
   )
 }

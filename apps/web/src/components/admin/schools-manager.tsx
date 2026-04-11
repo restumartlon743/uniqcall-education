@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useAdminSchools } from '@/hooks/use-supabase-data'
+import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   Table,
@@ -57,18 +58,21 @@ function SortHeader({ column, children }: { column: { getToggleSortingHandler: (
 }
 
 export function SchoolsManager() {
-  const { schools, loading } = useAdminSchools()
+  const { schools, loading, refetch } = useAdminSchools()
   const [search, setSearch] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingSchool, setEditingSchool] = useState<Record<string, any> | null>(null)
   const [formName, setFormName] = useState('')
   const [formAddress, setFormAddress] = useState('')
   const [sorting, setSorting] = useState<SortingState>([])
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   function openAdd() {
     setEditingSchool(null)
     setFormName('')
     setFormAddress('')
+    setSaveError(null)
     setDialogOpen(true)
   }
 
@@ -76,13 +80,46 @@ export function SchoolsManager() {
     setEditingSchool(school)
     setFormName(school.name)
     setFormAddress(school.address || '')
+    setSaveError(null)
     setDialogOpen(true)
   }
 
-  function handleSave() {
-    if (!formName.trim() || !formAddress.trim()) return
-    // In a real app this would call a Supabase insert/update
+  async function handleSave() {
+    if (!formName.trim()) return
+    setSaving(true)
+    setSaveError(null)
+
+    const supabase = createClient()
+    if (!supabase) {
+      setSaveError('Cannot connect to server.')
+      setSaving(false)
+      return
+    }
+
+    if (editingSchool) {
+      const { error } = await supabase
+        .from('schools')
+        .update({ name: formName.trim(), address: formAddress.trim() || null })
+        .eq('id', editingSchool.id)
+      if (error) {
+        setSaveError('Failed to update: ' + error.message)
+        setSaving(false)
+        return
+      }
+    } else {
+      const { error } = await supabase
+        .from('schools')
+        .insert({ name: formName.trim(), address: formAddress.trim() || null })
+      if (error) {
+        setSaveError('Failed to create: ' + error.message)
+        setSaving(false)
+        return
+      }
+    }
+
+    setSaving(false)
     setDialogOpen(false)
+    refetch()
   }
 
   const columns = useMemo<ColumnDef<Record<string, any>>[]>(
@@ -302,14 +339,17 @@ export function SchoolsManager() {
               onChange={(e) => setFormAddress(e.target.value)}
             />
           </div>
+          {saveError && (
+            <p className="text-sm text-red-400">{saveError}</p>
+          )}
         </div>
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => setDialogOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave}>
-            {editingSchool ? 'Save Changes' : 'Add School'}
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? 'Saving...' : editingSchool ? 'Save Changes' : 'Add School'}
           </Button>
         </DialogFooter>
       </Dialog>

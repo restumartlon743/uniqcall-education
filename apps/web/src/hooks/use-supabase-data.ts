@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
@@ -252,7 +252,7 @@ export function useTeacherClasses(teacherId: string) {
   const [classes, setClasses] = useState<Record<string, any>[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const fetchClasses = useCallback(async () => {
     const supabase = createClient()
     if (!supabase || !teacherId) {
       setLoading(false)
@@ -261,20 +261,18 @@ export function useTeacherClasses(teacherId: string) {
 
     setLoading(true)
 
-    async function fetchClasses() {
-      const { data } = await supabase!
-        .from('classes')
-        .select('*, schools(name)')
-        .eq('teacher_id', teacherId)
+    const { data } = await supabase
+      .from('classes')
+      .select('*, schools(name)')
+      .eq('teacher_id', teacherId)
 
-      setClasses(data || [])
-      setLoading(false)
-    }
-
-    fetchClasses()
+    setClasses(data || [])
+    setLoading(false)
   }, [teacherId])
 
-  return { classes, loading }
+  useEffect(() => { fetchClasses() }, [fetchClasses])
+
+  return { classes, loading, refetch: fetchClasses }
 }
 
 // ─── Hook 4: Teacher Groups ──────────────────────────────────
@@ -340,7 +338,7 @@ export function useTeacherTasks(teacherId: string) {
   const [tasks, setTasks] = useState<TaskData[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const fetchTasks = useCallback(async () => {
     const supabase = createClient()
     if (!supabase || !teacherId) {
       setLoading(false)
@@ -349,44 +347,42 @@ export function useTeacherTasks(teacherId: string) {
 
     setLoading(true)
 
-    async function fetchTasks() {
-      const { data } = await supabase!
-        .from('tasks')
-        .select('*, task_submissions(id), classes(students(id))')
-        .eq('teacher_id', teacherId)
-        .order('created_at', { ascending: false })
+    const { data } = await supabase
+      .from('tasks')
+      .select('*, task_submissions(id), classes(students(id))')
+      .eq('teacher_id', teacherId)
+      .order('created_at', { ascending: false })
 
-      if (data) {
-        setTasks(
-          data.map((t: Record<string, any>) => ({
-            id: t.id,
-            title: t.title,
-            description: t.description || '',
-            type:
-              t.task_type === 'group'
-                ? ('group' as const)
-                : ('individual' as const),
-            targetArchetype: t.target_archetype || null,
-            dueDate: t.due_date || '',
-            xpReward: t.xp_reward || 0,
-            submissionsCount: t.task_submissions?.length || 0,
-            totalExpected: t.classes?.students?.length || 0,
-            status:
-              t.due_date && new Date(t.due_date) < new Date()
-                ? 'completed'
-                : 'active',
-            knowledgeField: t.knowledge_field || '',
-            createdAt: t.created_at || '',
-          }))
-        )
-      }
-      setLoading(false)
+    if (data) {
+      setTasks(
+        data.map((t: Record<string, any>) => ({
+          id: t.id,
+          title: t.title,
+          description: t.description || '',
+          type:
+            t.task_type === 'group'
+              ? ('group' as const)
+              : ('individual' as const),
+          targetArchetype: t.target_archetype || null,
+          dueDate: t.due_date || '',
+          xpReward: t.xp_reward || 0,
+          submissionsCount: t.task_submissions?.length || 0,
+          totalExpected: t.classes?.students?.length || 0,
+          status:
+            t.due_date && new Date(t.due_date) < new Date()
+              ? 'completed'
+              : 'active',
+          knowledgeField: t.knowledge_field || '',
+          createdAt: t.created_at || '',
+        }))
+      )
     }
-
-    fetchTasks()
+    setLoading(false)
   }, [teacherId])
 
-  return { tasks, loading }
+  useEffect(() => { fetchTasks() }, [fetchTasks])
+
+  return { tasks, loading, refetch: fetchTasks }
 }
 
 // ─── Hook 6: Teacher Activities ──────────────────────────────
@@ -715,46 +711,46 @@ export function useAdminSchools() {
   const [schools, setSchools] = useState<Record<string, any>[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const fetchSchools = useCallback(async () => {
     const supabase = createClient()
     if (!supabase) {
       setLoading(false)
       return
     }
 
-    async function fetchSchools() {
-      const { data } = await supabase!
-        .from('schools')
-        .select('*, classes(id, teacher_id, students(id))')
-        .order('name')
+    setLoading(true)
 
-      setSchools(
-        data?.map((s: Record<string, any>) => ({
-          id: s.id,
-          name: s.name,
-          address: s.address,
-          logo_url: s.logo_url,
-          teacherCount: new Set(
-            s.classes
-              ?.map((c: Record<string, any>) => c.teacher_id)
-              .filter(Boolean)
-          ).size,
-          studentCount:
-            s.classes?.reduce(
-              (sum: number, c: Record<string, any>) =>
-                sum + (c.students?.length || 0),
-              0
-            ) || 0,
-          createdAt: s.created_at,
-        })) || []
-      )
-      setLoading(false)
-    }
+    const { data } = await supabase
+      .from('schools')
+      .select('*, classes(id, teacher_id, students(id))')
+      .order('name')
 
-    fetchSchools()
+    setSchools(
+      data?.map((s: Record<string, any>) => ({
+        id: s.id,
+        name: s.name,
+        address: s.address,
+        logo_url: s.logo_url,
+        teacherCount: new Set(
+          s.classes
+            ?.map((c: Record<string, any>) => c.teacher_id)
+            .filter(Boolean)
+        ).size,
+        studentCount:
+          s.classes?.reduce(
+            (sum: number, c: Record<string, any>) =>
+              sum + (c.students?.length || 0),
+            0
+          ) || 0,
+        createdAt: s.created_at,
+      })) || []
+    )
+    setLoading(false)
   }, [])
 
-  return { schools, loading }
+  useEffect(() => { fetchSchools() }, [fetchSchools])
+
+  return { schools, loading, refetch: fetchSchools }
 }
 
 // ─── Hook 15: Admin Classes ──────────────────────────────────
@@ -763,37 +759,39 @@ export function useAdminClasses() {
   const [classes, setClasses] = useState<Record<string, any>[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const fetchClasses = useCallback(async () => {
     const supabase = createClient()
     if (!supabase) {
       setLoading(false)
       return
     }
 
-    async function fetchClasses() {
-      const { data } = await supabase!
-        .from('classes')
-        .select('*, schools(name), students(id)')
-        .order('name')
+    setLoading(true)
 
-      setClasses(
-        data?.map((c: Record<string, any>) => ({
-          id: c.id,
-          name: c.name,
-          grade: c.grade,
-          academicYear: c.academic_year,
-          schoolName: c.schools?.name || '',
-          teacherName: '',
-          studentCount: c.students?.length || 0,
-        })) || []
-      )
-      setLoading(false)
-    }
+    const { data } = await supabase
+      .from('classes')
+      .select('*, schools(name), students(id)')
+      .order('name')
 
-    fetchClasses()
+    setClasses(
+      data?.map((c: Record<string, any>) => ({
+        id: c.id,
+        name: c.name,
+        grade: c.grade,
+        academicYear: c.academic_year,
+        schoolId: c.school_id || '',
+        schoolName: c.schools?.name || '',
+        teacherId: c.teacher_id || '',
+        teacherName: '',
+        studentCount: c.students?.length || 0,
+      })) || []
+    )
+    setLoading(false)
   }, [])
 
-  return { classes, loading }
+  useEffect(() => { fetchClasses() }, [fetchClasses])
+
+  return { classes, loading, refetch: fetchClasses }
 }
 
 // ─── Hook 16: Admin Teachers ─────────────────────────────────
@@ -802,33 +800,33 @@ export function useAdminTeachers() {
   const [teachers, setTeachers] = useState<Record<string, any>[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const fetchTeachers = useCallback(async () => {
     const supabase = createClient()
     if (!supabase) {
       setLoading(false)
       return
     }
 
-    async function fetchTeachers() {
-      const { data } = await supabase!
-        .from('teachers')
-        .select('*, profiles(full_name)')
+    setLoading(true)
 
-      setTeachers(
-        data?.map((t: Record<string, any>) => ({
-          id: t.id,
-          name: t.profiles?.full_name || '',
-          specialization: t.specialization || '',
-          employee_id: t.employee_id || '',
-        })) || []
-      )
-      setLoading(false)
-    }
+    const { data } = await supabase
+      .from('teachers')
+      .select('*, profiles(full_name)')
 
-    fetchTeachers()
+    setTeachers(
+      data?.map((t: Record<string, any>) => ({
+        id: t.id,
+        name: t.profiles?.full_name || '',
+        specialization: t.specialization || '',
+        employee_id: t.employee_id || '',
+      })) || []
+    )
+    setLoading(false)
   }, [])
 
-  return { teachers, loading }
+  useEffect(() => { fetchTeachers() }, [fetchTeachers])
+
+  return { teachers, loading, refetch: fetchTeachers }
 }
 
 // ─── Hook 17: Admin Students ─────────────────────────────────
@@ -837,40 +835,40 @@ export function useAdminStudents() {
   const [students, setStudents] = useState<Record<string, any>[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const fetchStudents = useCallback(async () => {
     const supabase = createClient()
     if (!supabase) {
       setLoading(false)
       return
     }
 
-    async function fetchStudents() {
-      const { data } = await supabase!
-        .from('students')
-        .select(
-          '*, profiles(full_name), archetypes(code, name_en), classes(name, schools(name))'
-        )
+    setLoading(true)
 
-      setStudents(
-        data?.map((s: Record<string, any>) => ({
-          id: s.id,
-          name: s.profiles?.full_name || '',
-          schoolName: s.classes?.schools?.name || '',
-          className: s.classes?.name || '',
-          archetype: s.archetypes?.code || null,
-          assessmentStatus: s.onboarding_completed
-            ? 'completed'
-            : 'not_started',
-          onboardingStatus: s.onboarding_completed ? 'completed' : 'pending',
-        })) || []
+    const { data } = await supabase
+      .from('students')
+      .select(
+        '*, profiles(full_name), archetypes(code, name_en), classes(name, schools(name))'
       )
-      setLoading(false)
-    }
 
-    fetchStudents()
+    setStudents(
+      data?.map((s: Record<string, any>) => ({
+        id: s.id,
+        name: s.profiles?.full_name || '',
+        schoolName: s.classes?.schools?.name || '',
+        className: s.classes?.name || '',
+        archetype: s.archetypes?.code || null,
+        assessmentStatus: s.onboarding_completed
+          ? 'completed'
+          : 'not_started',
+        onboardingStatus: s.onboarding_completed ? 'completed' : 'pending',
+      })) || []
+    )
+    setLoading(false)
   }, [])
 
-  return { students, loading }
+  useEffect(() => { fetchStudents() }, [fetchStudents])
+
+  return { students, loading, refetch: fetchStudents }
 }
 
 // ─── Hook 18: Admin Parents ──────────────────────────────────
@@ -879,39 +877,39 @@ export function useAdminParents() {
   const [parents, setParents] = useState<Record<string, any>[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const fetchParents = useCallback(async () => {
     const supabase = createClient()
     if (!supabase) {
       setLoading(false)
       return
     }
 
-    async function fetchParents() {
-      const { data } = await supabase!
-        .from('parents')
-        .select(
-          '*, profiles(full_name), parent_student(students(profiles(full_name)))'
-        )
+    setLoading(true)
 
-      setParents(
-        data?.map((p: Record<string, any>) => ({
-          id: p.id,
-          name: p.profiles?.full_name || '',
-          phone: p.phone || '',
-          linkedChildren:
-            p.parent_student?.map(
-              (ps: Record<string, any>) =>
-                ps.students?.profiles?.full_name || ''
-            ) || [],
-        })) || []
+    const { data } = await supabase
+      .from('parents')
+      .select(
+        '*, profiles(full_name), parent_student(students(profiles(full_name)))'
       )
-      setLoading(false)
-    }
 
-    fetchParents()
+    setParents(
+      data?.map((p: Record<string, any>) => ({
+        id: p.id,
+        name: p.profiles?.full_name || '',
+        phone: p.phone || '',
+        linkedChildren:
+          p.parent_student?.map(
+            (ps: Record<string, any>) =>
+              ps.students?.profiles?.full_name || ''
+          ) || [],
+      })) || []
+    )
+    setLoading(false)
   }, [])
 
-  return { parents, loading }
+  useEffect(() => { fetchParents() }, [fetchParents])
+
+  return { parents, loading, refetch: fetchParents }
 }
 
 // ─── Types: Leaderboard ──────────────────────────────────────

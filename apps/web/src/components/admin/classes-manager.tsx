@@ -6,6 +6,7 @@ import {
   useAdminSchools,
   useAdminTeachers,
 } from '@/hooks/use-supabase-data'
+import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   Table,
@@ -61,7 +62,7 @@ function SortHeader({ column, children }: { column: { getToggleSortingHandler: (
 }
 
 export function ClassesManager() {
-  const { classes: classesData, loading: classesLoading } = useAdminClasses()
+  const { classes: classesData, loading: classesLoading, refetch: refetchClasses } = useAdminClasses()
   const { schools, loading: schoolsLoading } = useAdminSchools()
   const { teachers, loading: teachersLoading } = useAdminTeachers()
 
@@ -77,6 +78,8 @@ export function ClassesManager() {
   const [formSchool, setFormSchool] = useState('')
   const [formTeacher, setFormTeacher] = useState('')
   const [sorting, setSorting] = useState<SortingState>([])
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const isLoading = classesLoading || schoolsLoading || teachersLoading
 
@@ -95,6 +98,7 @@ export function ClassesManager() {
     setFormYear('2025/2026')
     setFormSchool(schools[0]?.id ?? '')
     setFormTeacher('')
+    setSaveError(null)
     setDialogOpen(true)
   }
 
@@ -104,14 +108,59 @@ export function ClassesManager() {
     setFormGrade(String(cls.grade))
     setFormYear(cls.academicYear)
     setFormSchool(cls.schoolId || '')
-    setFormTeacher(cls.teacherName)
+    setFormTeacher(cls.teacherId || '')
+    setSaveError(null)
     setDialogOpen(true)
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!formName.trim() || !formSchool) return
-    // In a real app this would call a Supabase insert/update
+    setSaving(true)
+    setSaveError(null)
+
+    const supabase = createClient()
+    if (!supabase) {
+      setSaveError('Cannot connect to server.')
+      setSaving(false)
+      return
+    }
+
+    if (editingClass) {
+      const { error } = await supabase
+        .from('classes')
+        .update({
+          name: formName.trim(),
+          grade: formGrade ? parseInt(formGrade, 10) : null,
+          academic_year: formYear.trim() || null,
+          school_id: formSchool,
+          teacher_id: formTeacher || null,
+        })
+        .eq('id', editingClass.id)
+      if (error) {
+        setSaveError('Failed to update: ' + error.message)
+        setSaving(false)
+        return
+      }
+    } else {
+      const { error } = await supabase
+        .from('classes')
+        .insert({
+          name: formName.trim(),
+          grade: formGrade ? parseInt(formGrade, 10) : null,
+          academic_year: formYear.trim() || null,
+          school_id: formSchool,
+          teacher_id: formTeacher || null,
+        })
+      if (error) {
+        setSaveError('Failed to create: ' + error.message)
+        setSaving(false)
+        return
+      }
+    }
+
+    setSaving(false)
     setDialogOpen(false)
+    refetchClasses()
   }
 
   const columns = useMemo<ColumnDef<Record<string, any>>[]>(
@@ -397,7 +446,7 @@ export function ClassesManager() {
             >
               <SelectOption value="">Select teacher</SelectOption>
               {teachers.map((t) => (
-                <SelectOption key={t.id} value={t.name}>
+                <SelectOption key={t.id} value={t.id}>
                   {t.name}
                 </SelectOption>
               ))}
@@ -405,12 +454,16 @@ export function ClassesManager() {
           </div>
         </div>
 
+        {saveError && (
+          <p className="text-sm text-red-400">{saveError}</p>
+        )}
+
         <DialogFooter>
           <Button variant="ghost" onClick={() => setDialogOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave}>
-            {editingClass ? 'Save Changes' : 'Create Class'}
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? 'Saving...' : editingClass ? 'Save Changes' : 'Create Class'}
           </Button>
         </DialogFooter>
       </Dialog>

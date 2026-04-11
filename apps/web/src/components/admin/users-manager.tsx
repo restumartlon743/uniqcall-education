@@ -5,7 +5,9 @@ import {
   useAdminTeachers,
   useAdminStudents,
   useAdminParents,
+  useAdminSchools,
 } from '@/hooks/use-supabase-data'
+import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   Table,
@@ -205,10 +207,15 @@ export function UsersManager() {
   const [teacherEmail, setTeacherEmail] = useState('')
   const [teacherSchool, setTeacherSchool] = useState('')
 
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveResult, setSaveResult] = useState<string | null>(null)
+
   // Supabase data
-  const { teachers, loading: teachersLoading } = useAdminTeachers()
+  const { teachers, loading: teachersLoading, refetch: refetchTeachers } = useAdminTeachers()
   const { students, loading: studentsLoading } = useAdminStudents()
   const { parents, loading: parentsLoading } = useAdminParents()
+  const { schools: adminSchools } = useAdminSchools()
 
   const teacherColumns = useMemo<ColumnDef<Record<string, any>>[]>(
     () => [
@@ -348,11 +355,61 @@ export function UsersManager() {
     []
   )
 
+  async function handleAddTeacher() {
+    if (!teacherName.trim() || !teacherEmail.trim()) return
+    setSaving(true)
+    setSaveError(null)
+    setSaveResult(null)
+
+    const supabase = createClient()
+    if (!supabase) {
+      setSaveError('Cannot connect to server.')
+      setSaving(false)
+      return
+    }
+
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      setSaveError('Not authenticated.')
+      setSaving(false)
+      return
+    }
+
+    try {
+      const res = await fetch('/api/admin/add-teacher', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          fullName: teacherName.trim(),
+          email: teacherEmail.trim(),
+          schoolId: teacherSchool || null,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setSaveError(data.error || 'Failed to create teacher.')
+        setSaving(false)
+        return
+      }
+      setSaveResult(`Teacher created! Temp password: ${data.tempPassword}`)
+      setSaving(false)
+      refetchTeachers()
+    } catch {
+      setSaveError('Network error.')
+      setSaving(false)
+    }
+  }
+
   function openAddTeacher() {
     setAddRole('teacher')
     setTeacherName('')
     setTeacherEmail('')
     setTeacherSchool('')
+    setSaveError(null)
+    setSaveResult(null)
     setAddDialogOpen(true)
   }
 
@@ -505,12 +562,17 @@ export function UsersManager() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="user-school">School</Label>
-                <Input
-                  id="user-school"
-                  placeholder="School name"
+                <Select
                   value={teacherSchool}
                   onChange={(e) => setTeacherSchool(e.target.value)}
-                />
+                >
+                  <SelectOption value="">Select school</SelectOption>
+                  {adminSchools.map((s) => (
+                    <SelectOption key={s.id} value={s.id}>
+                      {s.name}
+                    </SelectOption>
+                  ))}
+                </Select>
               </div>
             </>
           ) : (
@@ -531,13 +593,23 @@ export function UsersManager() {
           )}
         </div>
 
+        {saveError && (
+          <p className="text-sm text-red-400">{saveError}</p>
+        )}
+        {saveResult && (
+          <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
+            <p className="text-sm text-emerald-300">{saveResult}</p>
+          </div>
+        )}
         <DialogFooter>
           <Button variant="ghost" onClick={() => setAddDialogOpen(false)}>
-            Cancel
+            {saveResult ? 'Close' : 'Cancel'}
           </Button>
-          <Button onClick={() => setAddDialogOpen(false)}>
-            {addRole === 'teacher' ? 'Add Teacher' : 'Generate Code'}
-          </Button>
+          {!saveResult && (
+            <Button onClick={handleAddTeacher} disabled={saving}>
+              {saving ? 'Creating...' : addRole === 'teacher' ? 'Add Teacher' : 'Generate Code'}
+            </Button>
+          )}
         </DialogFooter>
       </Dialog>
     </div>

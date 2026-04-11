@@ -14,11 +14,15 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectOption } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { Zap } from 'lucide-react'
+import { Zap, Loader2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 interface CreateTaskDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  teacherId: string
+  classes: { id: string; name: string }[]
+  onCreated?: () => void
 }
 
 const ARCHETYPE_OPTIONS = [
@@ -46,7 +50,7 @@ const KNOWLEDGE_FIELDS = [
   { value: 'SENI', label: 'Seni' },
 ]
 
-export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) {
+export function CreateTaskDialog({ open, onOpenChange, teacherId, classes, onCreated }: CreateTaskDialogProps) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [taskType, setTaskType] = useState('individual')
@@ -58,11 +62,61 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
   const [varkA, setVarkA] = useState('')
   const [varkR, setVarkR] = useState('')
   const [varkK, setVarkK] = useState('')
+  const [classId, setClassId] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Placeholder: will wire to API later
+    if (!title.trim() || !classId) return
+    setSaving(true)
+    setSaveError(null)
+
+    const supabase = createClient()
+    if (!supabase) {
+      setSaveError('Cannot connect to server.')
+      setSaving(false)
+      return
+    }
+
+    const varkAdaptations = (varkV || varkA || varkR || varkK)
+      ? { V: varkV, A: varkA, R: varkR, K: varkK }
+      : null
+
+    const { error } = await supabase.from('tasks').insert({
+      teacher_id: teacherId,
+      class_id: classId,
+      title: title.trim(),
+      description: description.trim() || null,
+      task_type: taskType,
+      target_archetype: targetArchetype || null,
+      vark_adaptations: varkAdaptations,
+      due_date: dueDate || null,
+      xp_reward: parseInt(xpReward, 10) || 20,
+      knowledge_field: knowledgeField || null,
+    })
+
+    if (error) {
+      setSaveError('Failed to create task: ' + error.message)
+      setSaving(false)
+      return
+    }
+
+    setSaving(false)
+    setTitle('')
+    setDescription('')
+    setTaskType('individual')
+    setTargetArchetype('')
+    setDueDate('')
+    setXpReward('100')
+    setKnowledgeField('ALAM')
+    setVarkV('')
+    setVarkA('')
+    setVarkR('')
+    setVarkK('')
+    setClassId('')
     onOpenChange(false)
+    onCreated?.()
   }
 
   return (
@@ -98,6 +152,23 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
           />
+        </div>
+
+        {/* Class */}
+        <div className="space-y-2">
+          <Label htmlFor="task-class">Class</Label>
+          <Select
+            id="task-class"
+            value={classId}
+            onChange={(e) => setClassId(e.target.value)}
+          >
+            <SelectOption value="">Select class</SelectOption>
+            {classes.map((c) => (
+              <SelectOption key={c.id} value={c.id}>
+                {c.name}
+              </SelectOption>
+            ))}
+          </Select>
         </div>
 
         {/* Row: Type + Archetype */}
@@ -246,6 +317,10 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
           </div>
         </div>
 
+        {saveError && (
+          <p className="text-sm text-red-400">{saveError}</p>
+        )}
+
         <DialogFooter>
           <Button
             variant="outline"
@@ -256,9 +331,17 @@ export function CreateTaskDialog({ open, onOpenChange }: CreateTaskDialogProps) 
           </Button>
           <Button
             type="submit"
+            disabled={saving || !title.trim() || !classId}
             className="bg-purple-600 text-white hover:bg-purple-700"
           >
-            Create Task
+            {saving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              'Create Task'
+            )}
           </Button>
         </DialogFooter>
       </form>
