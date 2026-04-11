@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test'
 
 const BASE_URL = process.env.TEST_BASE_URL ?? 'http://localhost:3001'
+const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL
+const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD
 
 test.describe('Login Page', () => {
   test('should display email/password form and Google button', async ({ page }) => {
@@ -35,19 +37,29 @@ test.describe('Login Page', () => {
   })
 
   test('should login with valid email/password and redirect to admin', async ({ page }) => {
+    test.skip(
+      !ADMIN_EMAIL || !ADMIN_PASSWORD,
+      'Skipping admin login test: E2E_ADMIN_EMAIL and E2E_ADMIN_PASSWORD must be set.'
+    )
+
     await page.goto(`${BASE_URL}/login`)
     
-    await page.locator('input[type="email"]').fill('ristyadirestu@gmail.com')
-    await page.locator('input[type="password"]').fill('Admin@Uniqcall2026')
+    await page.locator('input[type="email"]').fill(ADMIN_EMAIL!)
+    await page.locator('input[type="password"]').fill(ADMIN_PASSWORD!)
     await page.getByRole('button', { name: /sign in with email|masuk dengan email/i }).click()
     
     // Should redirect to /admin after middleware processes the session
-    await page.waitForURL(/\/(admin|onboarding|teacher)/, { timeout: 20000 })
+    await page.waitForURL((url) => {
+      const path = url.pathname
+      return path === '/admin' || path.startsWith('/admin/')
+    }, { timeout: 20000 })
     const url = page.url()
     console.log('Redirected to:', url)
-    
-    // Admin user should go to /admin
-    expect(url).toContain('/admin')
+    const pathname = new URL(url).pathname
+
+    // Admin user should never land on onboarding
+    expect(url).not.toContain('/onboarding')
+    expect(pathname === '/admin' || pathname.startsWith('/admin/')).toBeTruthy()
   })
 
   test('should toggle password visibility', async ({ page }) => {

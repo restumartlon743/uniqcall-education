@@ -2,6 +2,24 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
 
+type UserRole = 'teacher' | 'parent' | 'admin' | 'student'
+
+const ROLE_PATHS: Record<UserRole, string> = {
+  teacher: '/teacher',
+  parent: '/parent',
+  admin: '/admin',
+  student: '/student',
+}
+
+function normalizeRole(role: unknown): UserRole | null {
+  if (typeof role !== 'string') return null
+  const normalized = role.trim().toLowerCase()
+  if (normalized in ROLE_PATHS) {
+    return normalized as UserRole
+  }
+  return null
+}
+
 function getAdminClient() {
   // Service role client — bypasses RLS, only used server-side
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -56,6 +74,8 @@ export async function GET(request: NextRequest) {
           .eq('id', user.id)
           .single()
 
+        const normalizedRole = normalizeRole(profile?.role)
+
         if (!profile) {
           // Create profile for new user
           await adminClient.from('profiles').insert({
@@ -66,14 +86,8 @@ export async function GET(request: NextRequest) {
           return NextResponse.redirect(`${origin}/onboarding`)
         }
 
-        if (profile.role) {
-          const rolePaths: Record<string, string> = {
-            teacher: '/teacher',
-            parent: '/parent',
-            admin: '/admin',
-            student: '/student',
-          }
-          const redirectPath = rolePaths[profile.role] ?? next
+        if (normalizedRole) {
+          const redirectPath = ROLE_PATHS[normalizedRole]
           return NextResponse.redirect(`${origin}${redirectPath}`)
         }
 

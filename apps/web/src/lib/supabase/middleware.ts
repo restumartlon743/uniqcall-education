@@ -2,6 +2,24 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
 
+type UserRole = 'teacher' | 'parent' | 'admin' | 'student'
+
+const ROLE_PATHS: Record<UserRole, string> = {
+  teacher: '/teacher',
+  parent: '/parent',
+  admin: '/admin',
+  student: '/student',
+}
+
+function normalizeRole(role: unknown): UserRole | null {
+  if (typeof role !== 'string') return null
+  const normalized = role.trim().toLowerCase()
+  if (normalized in ROLE_PATHS) {
+    return normalized as UserRole
+  }
+  return null
+}
+
 function getAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -69,22 +87,17 @@ export async function updateSession(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
+    const normalizedRole = normalizeRole(profile?.role)
+
     // No profile or no role → onboarding
-    if (!profile?.role) {
+    if (!normalizedRole) {
       const url = request.nextUrl.clone()
       url.pathname = '/onboarding'
       return NextResponse.redirect(url)
     }
 
     // Redirect role mismatches (e.g., teacher accessing /parent)
-    const rolePaths: Record<string, string> = {
-      teacher: '/teacher',
-      parent: '/parent',
-      admin: '/admin',
-      student: '/student',
-    }
-
-    const expectedPrefix = rolePaths[profile.role]
+    const expectedPrefix = ROLE_PATHS[normalizedRole]
     if (expectedPrefix) {
       const dashboardPrefixes = ['/teacher', '/parent', '/admin', '/student']
       const isOnDashboard = dashboardPrefixes.some((p) =>
@@ -108,17 +121,17 @@ export async function updateSession(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    if (profile?.role) {
-      const rolePaths: Record<string, string> = {
-        teacher: '/teacher',
-        parent: '/parent',
-        admin: '/admin',
-        student: '/student',
-      }
+    const normalizedRole = normalizeRole(profile?.role)
+
+    if (normalizedRole) {
       const url = request.nextUrl.clone()
-      url.pathname = rolePaths[profile.role] ?? '/onboarding'
+      url.pathname = ROLE_PATHS[normalizedRole]
       return NextResponse.redirect(url)
     }
+
+    const url = request.nextUrl.clone()
+    url.pathname = '/onboarding'
+    return NextResponse.redirect(url)
   }
 
   return supabaseResponse
