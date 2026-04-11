@@ -1,7 +1,9 @@
 'use client'
 
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Chrome } from 'lucide-react'
+import { Chrome, Mail, Loader2, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { AnimatedBackground } from '@/components/effects/animated-background'
 import { CursorGlow } from '@/components/effects/cursor-glow'
@@ -41,6 +43,70 @@ const fadeUp = {
 
 export default function LoginPage() {
   const { t } = useLanguage()
+  const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleEmailSignIn(e: React.FormEvent) {
+    e.preventDefault()
+    if (!email.trim() || !password) return
+
+    setLoading(true)
+    setError(null)
+
+    const supabase = createClient()
+    if (!supabase) {
+      setError(t('login.error_generic'))
+      setLoading(false)
+      return
+    }
+
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    })
+
+    if (authError) {
+      setError(
+        authError.message.includes('Invalid login')
+          ? t('login.error_invalid')
+          : t('login.error_generic')
+      )
+      setLoading(false)
+      return
+    }
+
+    // Successful — redirect based on role
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+      const rolePaths: Record<string, string> = {
+        teacher: '/teacher',
+        parent: '/parent',
+        admin: '/admin',
+        student: '/student',
+      }
+
+      if (profile?.role) {
+        router.push(rolePaths[profile.role] ?? '/onboarding')
+      } else {
+        router.push('/onboarding')
+      }
+    } else {
+      router.push('/onboarding')
+    }
+  }
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0A0E27]">
@@ -68,7 +134,7 @@ export default function LoginPage() {
             variants={contentVariants}
             initial="hidden"
             animate="visible"
-            className="space-y-8"
+            className="space-y-6"
           >
             {/* Logo/Title */}
             <motion.div variants={fadeUp} className="text-center">
@@ -93,6 +159,68 @@ export default function LoginPage() {
               <div className="h-px flex-1 bg-linear-to-r from-transparent via-white/20 to-transparent" />
               <span className="text-xs tracking-widest text-slate-500">{t('login.divider_text')}</span>
               <div className="h-px flex-1 bg-linear-to-r from-transparent via-white/20 to-transparent" />
+            </motion.div>
+
+            {/* Email/Password Form */}
+            <motion.form variants={fadeUp} onSubmit={handleEmailSignIn} className="space-y-4">
+              <div>
+                <label className="block text-xs text-white/50 mb-1.5">{t('login.email_label')}</label>
+                <input
+                  type="email"
+                  placeholder={t('login.email_placeholder')}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition-colors focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-white/50 mb-1.5">{t('login.password_label')}</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder={t('login.password_placeholder')}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-10 text-sm text-white placeholder:text-white/30 outline-none transition-colors focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <p className="text-red-400 text-xs text-center">{error}</p>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading || !email.trim() || !password}
+                className="group flex w-full items-center justify-center gap-2 rounded-xl border border-purple-500/40 bg-purple-600/20 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-purple-600/30 hover:shadow-[0_0_25px_rgba(139,92,246,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Mail className="h-4 w-4 text-purple-400" />
+                )}
+                {t('login.email_button')}
+              </button>
+            </motion.form>
+
+            {/* Or divider */}
+            <motion.div variants={fadeUp} className="flex items-center gap-4">
+              <div className="h-px flex-1 bg-linear-to-r from-transparent via-white/10 to-transparent" />
+              <span className="text-[10px] uppercase tracking-widest text-slate-600">{t('login.or_divider')}</span>
+              <div className="h-px flex-1 bg-linear-to-r from-transparent via-white/10 to-transparent" />
             </motion.div>
 
             {/* Google Sign In */}

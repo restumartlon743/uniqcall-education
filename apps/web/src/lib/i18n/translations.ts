@@ -64,6 +64,14 @@ export type TranslationSection = {
     tagline: string
     divider_text: string
     google_button: string
+    email_label: string
+    password_label: string
+    email_placeholder: string
+    password_placeholder: string
+    email_button: string
+    or_divider: string
+    error_invalid: string
+    error_generic: string
     terms: string
   }
   onboarding: {
@@ -330,6 +338,14 @@ export const translations: Translations = {
       tagline: 'Student Future Navigation System',
       divider_text: 'Sign In',
       google_button: 'Sign in with Google',
+      email_label: 'Email',
+      password_label: 'Password',
+      email_placeholder: 'you@example.com',
+      password_placeholder: 'Enter your password',
+      email_button: 'Sign in with Email',
+      or_divider: 'or',
+      error_invalid: 'Invalid email or password.',
+      error_generic: 'Login failed. Please try again.',
       terms: 'By signing in, you agree to our privacy policy',
     },
     onboarding: {
@@ -592,6 +608,14 @@ export const translations: Translations = {
       tagline: 'Sistem Navigasi Masa Depan Siswa',
       divider_text: 'Masuk',
       google_button: 'Masuk dengan Google',
+      email_label: 'Email',
+      password_label: 'Kata Sandi',
+      email_placeholder: 'email@contoh.com',
+      password_placeholder: 'Masukkan kata sandi',
+      email_button: 'Masuk dengan Email',
+      or_divider: 'atau',
+      error_invalid: 'Email atau kata sandi salah.',
+      error_generic: 'Gagal masuk. Silakan coba lagi.',
       terms: 'Dengan masuk, Anda menyetujui kebijakan privasi kami',
     },
     onboarding: {
